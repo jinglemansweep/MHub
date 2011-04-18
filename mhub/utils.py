@@ -31,6 +31,8 @@ class JSBridge(object):
         self.actions = []
 
 
-    def add_action(self, action):
+    def add_action(self, provider, action, params=None):
 
-        self.actions.append(action)
+        if params is None: params = dict()
+
+        self.actions.append({"provider": provider, "action": action, "params": params})

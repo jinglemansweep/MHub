@@ -3,5 +3,5 @@ if(env.datetime.year == 2011) {
 }
 
 if(env.datetime.second > 40) {
-    handler.add_action("Action");
+    handler.add_action("test_provider", "test_action", {"p1": "test"});
 }

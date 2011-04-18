@@ -127,6 +127,8 @@ class MainController(object):
 
         actions = self.js_handler.actions
         for action in actions:
+            action = dict(action)
+            self.send_message({"key": "event.%s" % (str(action.get("provider"))), "params": action.get("params", dict())})
             print "Processing action '%s'" % (action)
             actions.pop()
 
