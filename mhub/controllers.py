@@ -1,6 +1,7 @@
 
 import datetime
 import os
+import time
 import yaml
 
 from carrot.connection import BrokerConnection
@@ -10,7 +11,8 @@ from spidermonkey import Runtime
 from pprint import pprint
 
 from providers import SqueezeboxServerProvider
-from utils import load_configuration
+from utils import configurator
+from utils import JSBridge
 
 class MainController(object):
 
@@ -30,7 +32,8 @@ class MainController(object):
 
     def load_configuration(self):
         
-        return load_configuration()
+        return configurator()
+
 
     def setup_persistence(self, host="localhost", port=27017):
         
@@ -52,6 +55,7 @@ class MainController(object):
         
         self.js_runtime = Runtime()
         self.js_ctx = self.js_runtime.new_context()
+        self.js_handler = JSBridge()
 
 
     def setup_scripts(self):
@@ -60,7 +64,7 @@ class MainController(object):
         scripts = self.cfg.get("scripts", dict())
         self.on_message = scripts.get("on_message", list())
         self.on_tick = scripts.get("on_tick", list())
-        
+
 
     def send_message(self, message, exchange="mhub", key="event.default"):
 
@@ -79,18 +83,23 @@ class MainController(object):
         message.ack()
 
 
-    def update_state(self):
+    def update_env(self):
 
         dt = datetime.datetime.now()
 
-        self.state["datetime"] = {"year": dt.year, "month": dt.month, "day": dt.day,
-                                  "hour": dt.hour, "minute": dt.minute, "second": dt.second}
+        env = {}
+        env["datetime"] = {"year": dt.year, "month": dt.month, "day": dt.day,
+                           "hour": dt.hour, "minute": dt.minute, "second": dt.second}
+        
+        self.env = env
 
 
     def process_events(self, message=None):
 
-        self.update_state()
+        self.update_env()
         self.js_ctx.add_global("state", self.state)
+        self.js_ctx.add_global("env", self.env)
+        self.js_ctx.add_global("handler", self.js_handler)
         self.js_ctx.add_global("message", message)
 
         if message:
@@ -108,11 +117,23 @@ class MainController(object):
                 print "Script not found"
 
         self.state = self.js_ctx.execute("state;")
+        self.js_handler = self.js_ctx.execute("handler;")
         print self.state
 
-        
+        self.process_actions()
+
+
+    def process_actions(self):
+
+        actions = self.js_handler.actions
+        for action in actions:
+            print "Processing action '%s'" % (action)
+            actions.pop()
+
+
     def start(self):
 
         while True:
             self.mq_consumer.process_next()
             self.process_events()
+            time.sleep(0.1)

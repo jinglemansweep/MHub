@@ -2,7 +2,7 @@ import os
 import yaml
 from xdg import BaseDirectory
 
-def load_configuration(filename=None):
+def configurator(filename=None):
 
     base_dir = os.path.join(BaseDirectory.xdg_config_home, "mhub")
     if not os.path.exists(base_dir): os.makedirs(base_dir)
@@ -21,3 +21,16 @@ def load_configuration(filename=None):
         yaml.dump(cfg, stream)
     stream.close()
     return cfg
+
+
+class JSBridge(object):
+    
+
+    def __init__(self):
+    
+        self.actions = []
+
+
+    def add_action(self, action):
+
+        self.actions.append(action)
