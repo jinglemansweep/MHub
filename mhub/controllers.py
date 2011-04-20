@@ -10,19 +10,25 @@ from pymongo import Connection
 from spidermonkey import Runtime
 from pprint import pprint
 
+from dao import DefaultStore
 from providers import SqueezeboxServerProvider
 from utils import configurator
 from utils import JSBridge
 
+
 class MainController(object):
+
 
     mq = None
     providers = None
+    state = None
+
 
     def __init__(self, cfg):
 
         self.cfg = self.load_configuration()
         self.callbacks = {"on_message": []}
+        self.state = dict()
 
         self.setup_scripts()
         self.setup_messaging()
@@ -37,17 +43,27 @@ class MainController(object):
 
     def setup_persistence(self, host="localhost", port=27017):
         
-        self.db_connection = Connection(host, port)
-        self.db = self.db_connection["mhub"]
-        self.state = self.db.metadata.find_one({"_id": "state"})
-        if self.state is None:
-            self.state = self.db.metadata.insert({"_id": "state"})
+        self.store = DefaultStore(host=host, port=port)
 
             
-    def setup_messaging(self, host="localhost", port=5672, user="guest", password="guest", vhost=None):
+    def setup_messaging(self, host="localhost", 
+                              port=5672, 
+                              user="guest", 
+                              password="guest", 
+                              vhost=None):
 
-        self.mq_connection = BrokerConnection(hostname=host, port=port, userid=user, password=password, virtual_host=vhost)
-        self.mq_consumer = Consumer(connection=self.mq_connection, queue="input", exchange="mhub", routing_key="event.default")
+        self.mq_connection = BrokerConnection(hostname=host, 
+                                              port=port, 
+                                              userid=user, 
+                                              password=password, 
+                                              virtual_host=vhost)
+
+        self.mq_consumer = Consumer(connection=self.mq_connection, 
+                                    queue="input", 
+                                    exchange="mhub", 
+                                    exchange_type="topic", 
+                                    routing_key="input.*")
+
         self.mq_consumer.register_callback(self.mq_message_received)
 
 
@@ -66,9 +82,15 @@ class MainController(object):
         self.on_tick = scripts.get("on_tick", list())
 
 
-    def send_message(self, message, exchange="mhub", key="event.default"):
+    def send_message(self, message, 
+                           exchange="mhub", 
+                           key="action.default"):
 
-        self.mq_publisher = Publisher(connection=self.mq_connection, exchange=exchange, routing_key=key)
+        self.mq_publisher = Publisher(connection=self.mq_connection, 
+                                      exchange=exchange, 
+                                      exchange_type="topic",
+                                      routing_key=key)
+
         self.mq_publisher.send(message)
         self.mq_publisher.close()
 
@@ -117,25 +139,36 @@ class MainController(object):
                 print "Script not found"
 
         self.state = self.js_ctx.execute("state;")
-        self.js_handler = self.js_ctx.execute("handler;")
-        print self.state
-
+        self.js_handler = self.js_ctx.execute("handler;")        
+        
         self.process_actions()
 
 
     def process_actions(self):
 
         actions = self.js_handler.actions
+
         for action in actions:
+
             action = dict(action)
-            self.send_message({"key": "event.%s" % (str(action.get("provider"))), "params": action.get("params", dict())})
-            print "Processing action '%s'" % (action)
+            provider = action.get("provider", "default")
+            cmd = action.get("cmd")            
+            device = action.get("device", "default")
+            params = action.get("params", dict())
+
+            if all([provider, cmd]):
+                message = {"cmd": cmd, "device": device, "params": params}
+                self.send_message(message, key="action.%s" % (provider))
+                print "Processing action '%s'" % (action)
+
             actions.pop()
 
 
     def start(self):
 
         while True:
-            self.mq_consumer.process_next()
+
+            self.mq_consumer.fetch(enable_callbacks=True)
             self.process_events()
+            print self.state
             time.sleep(0.1)

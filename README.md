@@ -6,10 +6,14 @@ mHub is an AMQP based home automation platform providing high-level flow and sta
 
 All messages are sent and received using AMQP routing keys. This key is basically a ID namespacing the message into basic categories, actions and events. Each message should follow the same structure which should encapsulate all configuration and state for all plugins.
 
+## Exchange
+
+A topic based AMQP exchange is configured using the name `mhub`.
+
 ## Routing Keys
 
-* mhub.input.[plugin]
-* mhub.output.[plugin]
+* input.[plugin]
+* output.[plugin]
 
 ## Message Structure
 
