@@ -7,7 +7,7 @@ import yaml
 from carrot.connection import BrokerConnection
 from carrot.messaging import Consumer, Publisher
 from pymongo import Connection
-from spidermonkey import Runtime
+from spidermonkey import Runtime, JSError
 from pprint import pprint
 
 from dao import DefaultStore
@@ -19,16 +19,23 @@ from utils import JSBridge
 class MainController(object):
 
 
+    """ Main loop and messaging controller """
+
+
     mq = None
     providers = None
     state = None
+    initialised = None
 
 
     def __init__(self, cfg):
 
+        """ Constructor """
+
         self.cfg = self.load_configuration()
         self.callbacks = {"on_message": []}
         self.state = dict()
+        self.initialised = False
 
         self.setup_scripts()
         self.setup_messaging()
@@ -38,10 +45,14 @@ class MainController(object):
 
     def load_configuration(self):
         
+        """ Loads (or initialises and returns) configuration """
+
         return configurator()
 
 
     def setup_persistence(self, host="localhost", port=27017):
+
+        """ Setup persistence datastore """
         
         self.store = DefaultStore(host=host, port=port)
 
@@ -51,6 +62,8 @@ class MainController(object):
                               user="guest", 
                               password="guest", 
                               vhost=None):
+
+        """ Setup AMQP connection and message consumer """
 
         self.mq_connection = BrokerConnection(hostname=host, 
                                               port=port, 
@@ -69,6 +82,8 @@ class MainController(object):
 
     def setup_interpreter(self):
         
+        """ Setup JavaScript (SpiderMonkey) interpreter """
+
         self.js_runtime = Runtime()
         self.js_ctx = self.js_runtime.new_context()
         self.js_handler = JSBridge()
@@ -76,8 +91,10 @@ class MainController(object):
 
     def setup_scripts(self):
 
-        print self.cfg
+        """ Setup configured init, timed and event JavaScript scripts """
+
         scripts = self.cfg.get("scripts", dict())
+        self.on_init = scripts.get("on_init", list())
         self.on_message = scripts.get("on_message", list())
         self.on_tick = scripts.get("on_tick", list())
 
@@ -85,6 +102,8 @@ class MainController(object):
     def send_message(self, message, 
                            exchange="mhub", 
                            key="action.default"):
+
+        """ Send an AMQP message via configured AMQP connection """
 
         self.mq_publisher = Publisher(connection=self.mq_connection, 
                                       exchange=exchange, 
@@ -97,6 +116,8 @@ class MainController(object):
 
     def mq_message_received(self, data, message):
 
+        """ On MQ message received callback function """
+
         key = data.get("key", None)
 
         if key is not None:
@@ -106,6 +127,8 @@ class MainController(object):
 
 
     def update_env(self):
+
+        """ Update read-only environment with useful data (datetime etc.) """
 
         dt = datetime.datetime.now()
 
@@ -118,13 +141,18 @@ class MainController(object):
 
     def process_events(self, message=None):
 
+        """ Process generic events using configured JavaScript scripts """
+
         self.update_env()
         self.js_ctx.add_global("state", self.state)
         self.js_ctx.add_global("env", self.env)
         self.js_ctx.add_global("handler", self.js_handler)
         self.js_ctx.add_global("message", message)
 
-        if message:
+        if not self.initialised:
+            scripts = self.on_init
+            self.initialised = True
+        elif message:
             scripts = self.on_message
         else:
             scripts = self.on_tick
@@ -134,9 +162,12 @@ class MainController(object):
                 fh = file(script, "r")
                 content = "\n".join(fh.readlines())
                 fh.close()
-                processed = self.js_ctx.execute(content)
+                try:
+                    processed = self.js_ctx.execute(content)
+                except JSError as exc:
+                    print "[%s] JS execution problem: %s" % (script, exc)
             else:
-                print "Script not found"
+                print "Script '%s' not found" % (script)
 
         self.state = self.js_ctx.execute("state;")
         self.js_handler = self.js_ctx.execute("handler;")        
@@ -145,6 +176,8 @@ class MainController(object):
 
 
     def process_actions(self):
+
+        """ Process actions registered during JavaScript evaluation """
 
         actions = self.js_handler.actions
 
@@ -166,9 +199,13 @@ class MainController(object):
 
     def start(self):
 
+        """ Start the main controller loop """
+
         while True:
 
             self.mq_consumer.fetch(enable_callbacks=True)
             self.process_events()
             print self.state
             time.sleep(0.1)
+
+

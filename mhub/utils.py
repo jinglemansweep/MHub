@@ -16,8 +16,9 @@ def configurator(filename=None):
     else:
         cfg = {
             "scripts": {
-                "on_message": ["scripts/message.js"],
-                "on_tick": ["scripts/tick.js"]
+                "on_init": ["scripts/event/on_init.js"],
+                "on_message": ["scripts/event/on_message.js"],
+                "on_tick": ["scripts/timed/on_tick.js"]
             }
         }
         stream = file(filename, "w")
@@ -38,11 +39,14 @@ class Timer(object):
 
     def update(self):
 
-        self.remaining = ((self.start + self.duration) - int(time.time()))
-        self.elapsed = (self.duration) - self.remaining
+        remaining = ((self.start + self.duration) - int(time.time()))
+        elapsed = (self.duration) - remaining
+
+        self.remaining = remaining if remaining > 0 else 0
+        self.elapsed = elapsed if elapsed < self.duration else self.duration
 
 
-    def reset(self):
+    def restart(self):
        
         self.start = int(time.time())
         self.update
