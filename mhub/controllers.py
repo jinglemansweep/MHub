@@ -1,19 +1,16 @@
 
 import datetime
+import imp
 import os
 import time
 import yaml
 
 from carrot.connection import BrokerConnection
 from carrot.messaging import Consumer, Publisher
-from pymongo import Connection
-from spidermonkey import Runtime, JSError
 from pprint import pprint
 
 from dao import DefaultStore
-from providers import SqueezeboxServerProvider
 from utils import configurator
-from utils import JSBridge
 
 
 class MainController(object):
@@ -39,7 +36,6 @@ class MainController(object):
 
         self.setup_scripts()
         self.setup_messaging()
-        self.setup_interpreter()
         self.setup_persistence()
 
 
@@ -80,15 +76,6 @@ class MainController(object):
         self.mq_consumer.register_callback(self.mq_message_received)
 
 
-    def setup_interpreter(self):
-        
-        """ Setup JavaScript (SpiderMonkey) interpreter """
-
-        self.js_runtime = Runtime()
-        self.js_ctx = self.js_runtime.new_context()
-        self.js_handler = JSBridge()
-
-
     def setup_scripts(self):
 
         """ Setup configured init, timed and event JavaScript scripts """
@@ -118,11 +105,8 @@ class MainController(object):
 
         """ On MQ message received callback function """
 
-        key = data.get("key", None)
 
-        if key is not None:
-            self.process_events(self.state, data)
-
+        self.process_events(message)
         message.ack()
 
 
@@ -144,34 +128,24 @@ class MainController(object):
         """ Process generic events using configured JavaScript scripts """
 
         self.update_env()
-        self.js_ctx.add_global("state", self.state)
-        self.js_ctx.add_global("env", self.env)
-        self.js_ctx.add_global("handler", self.js_handler)
-        self.js_ctx.add_global("message", message)
-
+        
         if not self.initialised:
             scripts = self.on_init
             self.initialised = True
-        elif message:
+        elif message is not None:
             scripts = self.on_message
         else:
             scripts = self.on_tick
 
         for script in scripts:
             if os.path.exists(script):
-                fh = file(script, "r")
-                content = "\n".join(fh.readlines())
-                fh.close()
-                try:
-                    processed = self.js_ctx.execute(content)
-                except JSError as exc:
-                    print "[%s] JS execution problem: %s" % (script, exc)
+                src = imp.load_source("script", script)
+                self.state = src.run(state=self.state, 
+                                     env=self.env, 
+                                     message=message)
             else:
                 print "Script '%s' not found" % (script)
 
-        self.state = self.js_ctx.execute("state;")
-        self.js_handler = self.js_ctx.execute("handler;")        
-        
         self.process_actions()
 
 
@@ -179,7 +153,7 @@ class MainController(object):
 
         """ Process actions registered during JavaScript evaluation """
 
-        actions = self.js_handler.actions
+        actions = []
 
         for action in actions:
 

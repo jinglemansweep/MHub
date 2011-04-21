@@ -16,9 +16,9 @@ def configurator(filename=None):
     else:
         cfg = {
             "scripts": {
-                "on_init": ["scripts/event/on_init.js"],
-                "on_message": ["scripts/event/on_message.js"],
-                "on_tick": ["scripts/timed/on_tick.js"]
+                "on_init": ["scripts/event/on_init.py"],
+                "on_message": ["scripts/event/on_message.py"],
+                "on_tick": ["scripts/timed/on_tick.py"]
             }
         }
         stream = file(filename, "w")
@@ -76,33 +76,5 @@ class Timer(object):
         return (self.remaining < 0)
 
 
-class JSBridge(object):
-    
 
-    def __init__(self):
-    
-        self.actions = list()
-        self.timers = dict()
-
-
-    def add_action(self, provider, action, params=None):
-
-        if params is None: params = dict()
-
-        self.actions.append({"provider": provider, "action": action, "params": params})
-
-
-    def del_timer(self, name):
-
-        if name in self.timers:
-            del self.timers[name]
-
-
-    def get_timer(self, name, duration):
-
-        if name not in self.timers:
-            timer = Timer(duration)
-            self.timers[name] = timer
-        
-        return self.timers.get(name)
 
