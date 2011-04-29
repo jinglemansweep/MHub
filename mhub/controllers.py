@@ -11,6 +11,7 @@ from pprint import pprint
 
 from dao import DefaultStore
 from utils import configurator
+import helpers as ctx_helpers
 
 
 class MainController(object):
@@ -106,7 +107,7 @@ class MainController(object):
         """ On MQ message received callback function """
 
 
-        self.process_events(message)
+        self.process_event(message)
         message.ack()
 
 
@@ -123,9 +124,9 @@ class MainController(object):
         self.env = env
 
 
-    def process_events(self, message=None):
+    def process_event(self, message=None):
 
-        """ Process generic events using configured JavaScript scripts """
+        """ Process generic events using configured scripts """
 
         self.update_env()
         
@@ -137,14 +138,24 @@ class MainController(object):
         else:
             scripts = self.on_tick
 
+        ctx = {
+            "state": self.state,
+            "env": self.env,
+            "message": message,
+            "helpers": {
+                "send_email": ctx_helpers.send_email,
+                "send_message": self.send_message
+            }
+        }
+
         for script in scripts:
             if os.path.exists(script):
-                src = imp.load_source("script", script)
-                self.state = src.run(state=self.state, 
-                                     env=self.env, 
-                                     message=message)
+                execfile(script, ctx)
             else:
                 print "Script '%s' not found" % (script)
+
+        self.state = ctx.get("state")
+        self.env = ctx.get("env")
 
         self.process_actions()
 
@@ -178,7 +189,7 @@ class MainController(object):
         while True:
 
             self.mq_consumer.fetch(enable_callbacks=True)
-            self.process_events()
+            self.process_event()
             print self.state
             time.sleep(0.1)
 

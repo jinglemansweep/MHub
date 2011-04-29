@@ -1,2 +1,5 @@
 *.pyc
 .idea
+MANIFEST
+build
+dist

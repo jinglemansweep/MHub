@@ -1,7 +1,5 @@
+send_message = helpers.get("send_message")
 
-def run(state, env, message=None):
+state["a1"] = "Woo"
 
-
-    state["test"] = "MONKEY"
-
-    return state
+send_message("HELLo", key="input.test")
