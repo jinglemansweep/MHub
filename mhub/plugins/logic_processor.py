@@ -54,27 +54,42 @@ class Plugin(object):
 
         """ Gets the context used in script processing """
 
+        self.update_environment()
+
         ctx = {
             "state": self.state,
-            "env": self.get_environment(),
+            "env": self.env,
             "logger": self.logger,
             "send_message": self.publisher.send
         }
+        
         return ctx
 
 
-    def get_environment(self):
+    def update_environment(self):
 
         """ Update read-only environment with useful data (datetime etc.) """
 
         dt = datetime.datetime.now()
 
-        env = {}
-        env["datetime"] = {"year": dt.year, "month": dt.month, "day": dt.day,
-                           "hour": dt.hour, "minute": dt.minute, "second": dt.second}
+        env = self.env
 
-        return env
+        if not "datetime" in env: env["datetime"] = {}
 
+        for interval in ["year", "month", "day", "hour", "minute", "second"]:
+            current = getattr(dt, interval)
+            env["datetime"]["new_%s" % (interval)] = ((env.get("datetime").get(interval, current) != current))
+            env["datetime"][interval] = current
+
+        env["datetime"]["datestamp"] = dt.strftime("%Y%m%d")
+        env["datetime"]["year_month"] = dt.strftime("%Y%m")
+        env["datetime"]["month_day"] = dt.strftime("%m%d")
+        env["datetime"]["timestamp"] = dt.strftime("%H%M%S")
+        env["datetime"]["hour_minute"] = dt.strftime("%H%M")
+        env["datetime"]["minute_second"] = dt.strftime("%M%S")
+
+        self.env = env
+        
 
     def setup_scripts(self):
 
