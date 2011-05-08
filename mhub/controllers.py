@@ -10,7 +10,7 @@ from carrot.messaging import Consumer, Publisher
 from pprint import pprint
 
 from logsetup import DefaultLogger
-from utils import configurator, find_plugins
+from utils import configurator
 
 
 
@@ -63,6 +63,11 @@ class MainController(object):
                                     exchange_type="topic", 
                                     routing_key="input.*")
 
+        self.mq_publisher = Publisher(connection=self.mq_connection,
+                                      exchange="mhub",
+                                      exchange_type="topic",
+                                      routing_key="input.default")
+
         self.mq_consumer.register_callback(self.on_message)
 
 
@@ -81,24 +86,16 @@ class MainController(object):
                 plugin_path = os.path.join(plugins_path, "%s.py" % (name))
                 if os.path.exists(plugin_path):
                     plugin_cls = imp.load_source("Plugin", plugin_path)
-                    self.plugins[name] = plugin_cls.Plugin(cfg, self.logger)
+                    self.plugins[name] = plugin_cls.Plugin(cfg, self.mq_publisher, self.logger)
             else:
                 self.logger.debug("Plugin '%s' disabled" % (name))
 
 
-    def send_message(self, message, 
-                           exchange="mhub", 
-                           key="action.default"):
+    def send_message(self, message, key="action.default"):
 
         """ Send an AMQP message via configured AMQP connection """
 
-        self.mq_publisher = Publisher(connection=self.mq_connection, 
-                                      exchange=exchange, 
-                                      exchange_type="topic",
-                                      routing_key=key)
-
         self.mq_publisher.send(message)
-        self.mq_publisher.close()
 
 
     def on_message(self, data, message):
@@ -106,9 +103,9 @@ class MainController(object):
         """ On MQ message received forwarding callback function """
 
         for name, plugin in self.plugins.iteritems():
-            self.logger.debug("Forwarding message to plugin '%s'" % (name))
+            # self.logger.debug("Forwarding message to plugin '%s'" % (name))
             if hasattr(plugin, "on_message"):
-                plugin.on_message(message)
+                plugin.on_message(data, message)
 
         message.ack()
 

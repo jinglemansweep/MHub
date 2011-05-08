@@ -1,18 +1,18 @@
 import datetime
 
-
 class Plugin(object):
 
     """ Logic Processor Plugin """
 
-    def __init__(self, cfg, logger):
+    def __init__(self, cfg, publisher, logger):
 
         """ Constructor """
 
         self.cfg = cfg
+        self.publisher = publisher
         self.logger = logger
-        self.scripts = dict()
 
+        self.scripts = dict()
         self.env = dict()
         self.state = dict()
 
@@ -33,16 +33,16 @@ class Plugin(object):
         for script in self.scripts.get("on_tick"):
             exec(script, ctx)
 
-        self.logger.debug("State:")
-        self.logger.debug(self.state)
+        #self.logger.debug("State:")
+        #self.logger.debug(self.state)
         
 
-    def on_message(self, message=None):
+    def on_message(self, data, message):
 
         """ On AMQP message handler """
 
         ctx = self.get_context()
-        ctx["message"] = message
+        ctx["message"] = data
 
         for script in self.scripts.get("on_message"):
             exec(script, ctx)
@@ -57,7 +57,8 @@ class Plugin(object):
         ctx = {
             "state": self.state,
             "env": self.get_environment(),
-            "logger": self.logger
+            "logger": self.logger,
+            "send_message": self.publisher.send
         }
         return ctx
 
