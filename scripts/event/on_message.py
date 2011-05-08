@@ -1,1 +1,1 @@
-print message.body
+logger.info(message.body)

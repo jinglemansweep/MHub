@@ -1,5 +1,5 @@
-send_message = helpers.get("send_message")
+#send_message = helpers.get("send_message")
 
 state["a1"] = "Woo"
 
-send_message("HELLo", key="input.test")
+#send_message("HELLo", key="input.test")

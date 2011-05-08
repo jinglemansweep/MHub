@@ -9,9 +9,9 @@ from carrot.connection import BrokerConnection
 from carrot.messaging import Consumer, Publisher
 from pprint import pprint
 
-from dao import DefaultStore
-from utils import configurator
-import helpers as ctx_helpers
+from logsetup import DefaultLogger
+from utils import configurator, find_plugins
+
 
 
 class MainController(object):
@@ -19,25 +19,23 @@ class MainController(object):
 
     """ Main loop and messaging controller """
 
-
     mq = None
-    providers = None
-    state = None
     initialised = None
 
 
-    def __init__(self, cfg):
+    def __init__(self, options, args, server=False):
 
         """ Constructor """
 
+        self.options = options
+        self.args = args
         self.cfg = self.load_configuration()
-        self.callbacks = {"on_message": []}
-        self.state = dict()
+        self.plugins = dict()
+        self.logger = DefaultLogger(name="mhub", verbosity=options.verbosity).get_logger()
         self.initialised = False
 
-        self.setup_scripts()
         self.setup_messaging()
-        self.setup_persistence()
+        if server: self.setup_plugins()
 
 
     def load_configuration(self):
@@ -46,27 +44,18 @@ class MainController(object):
 
         return configurator()
 
-
-    def setup_persistence(self, host="localhost", port=27017):
-
-        """ Setup persistence datastore """
-        
-        self.store = DefaultStore(host=host, port=port)
-
             
-    def setup_messaging(self, host="localhost", 
-                              port=5672, 
-                              user="guest", 
-                              password="guest", 
-                              vhost=None):
+    def setup_messaging(self):
 
         """ Setup AMQP connection and message consumer """
 
-        self.mq_connection = BrokerConnection(hostname=host, 
-                                              port=port, 
-                                              userid=user, 
-                                              password=password, 
-                                              virtual_host=vhost)
+        amqp_cfg = self.cfg.get("amqp")
+
+        self.mq_connection = BrokerConnection(hostname=amqp_cfg.get("host"),
+                                              port=amqp_cfg.get("port"),
+                                              userid=amqp_cfg.get("username"),
+                                              password=amqp_cfg.get("password"),
+                                              virtual_host=amqp_cfg.get("vhost"))
 
         self.mq_consumer = Consumer(connection=self.mq_connection, 
                                     queue="input", 
@@ -74,17 +63,27 @@ class MainController(object):
                                     exchange_type="topic", 
                                     routing_key="input.*")
 
-        self.mq_consumer.register_callback(self.mq_message_received)
+        self.mq_consumer.register_callback(self.on_message)
 
 
-    def setup_scripts(self):
+    def setup_plugins(self):
 
-        """ Setup configured init, timed and event JavaScript scripts """
+        """ Setup configured plugins """
 
-        scripts = self.cfg.get("scripts", dict())
-        self.on_init = scripts.get("on_init", list())
-        self.on_message = scripts.get("on_message", list())
-        self.on_tick = scripts.get("on_tick", list())
+        plugins_cfg = self.cfg.get("plugins")
+
+        plugins_path = os.path.join(os.path.dirname(__file__), "plugins")
+
+        for name, cfg in plugins_cfg.iteritems():
+            if cfg.get("enabled"):
+                self.logger.info("Plugin '%s' registered" % (name))
+                self.logger.debug("Cfg: %s" % (cfg))
+                plugin_path = os.path.join(plugins_path, "%s.py" % (name))
+                if os.path.exists(plugin_path):
+                    plugin_cls = imp.load_source("Plugin", plugin_path)
+                    self.plugins[name] = plugin_cls.Plugin(cfg, self.logger)
+            else:
+                self.logger.debug("Plugin '%s' disabled" % (name))
 
 
     def send_message(self, message, 
@@ -102,95 +101,53 @@ class MainController(object):
         self.mq_publisher.close()
 
 
-    def mq_message_received(self, data, message):
+    def on_message(self, data, message):
 
-        """ On MQ message received callback function """
+        """ On MQ message received forwarding callback function """
 
+        for name, plugin in self.plugins.iteritems():
+            self.logger.debug("Forwarding message to plugin '%s'" % (name))
+            if hasattr(plugin, "on_message"):
+                plugin.on_message(message)
 
-        self.process_event(message)
         message.ack()
 
 
-    def update_env(self):
+    def on_init(self):
 
-        """ Update read-only environment with useful data (datetime etc.) """
+        """ On startup forwarding function """
 
-        dt = datetime.datetime.now()
-
-        env = {}
-        env["datetime"] = {"year": dt.year, "month": dt.month, "day": dt.day,
-                           "hour": dt.hour, "minute": dt.minute, "second": dt.second}
-        
-        self.env = env
-
-
-    def process_event(self, message=None):
-
-        """ Process generic events using configured scripts """
-
-        self.update_env()
-        
         if not self.initialised:
-            scripts = self.on_init
+            for name, plugin in self.plugins.iteritems():
+                self.logger.debug("Initialising plugin '%s'" % (name))
+                if hasattr(plugin, "on_init"):
+                    plugin.on_init()
             self.initialised = True
-        elif message is not None:
-            scripts = self.on_message
-        else:
-            scripts = self.on_tick
+            
 
-        ctx = {
-            "state": self.state,
-            "env": self.env,
-            "message": message,
-            "helpers": {
-                "send_email": ctx_helpers.send_email,
-                "send_message": self.send_message
-            }
-        }
+    def on_tick(self):
 
-        for script in scripts:
-            if os.path.exists(script):
-                execfile(script, ctx)
-            else:
-                print "Script '%s' not found" % (script)
+        """ On process tick forwarding function """
 
-        self.state = ctx.get("state")
-        self.env = ctx.get("env")
-
-        self.process_actions()
-
-
-    def process_actions(self):
-
-        """ Process actions registered during JavaScript evaluation """
-
-        actions = []
-
-        for action in actions:
-
-            action = dict(action)
-            provider = action.get("provider", "default")
-            cmd = action.get("cmd")            
-            device = action.get("device", "default")
-            params = action.get("params", dict())
-
-            if all([provider, cmd]):
-                message = {"cmd": cmd, "device": device, "params": params}
-                self.send_message(message, key="action.%s" % (provider))
-                print "Processing action '%s'" % (action)
-
-            actions.pop()
+        for name, plugin in self.plugins.iteritems():
+            # self.logger.debug("Sending tick event to plugin '%s'" % (name))
+            if hasattr(plugin, "on_tick"):
+                plugin.on_tick()
 
 
     def start(self):
 
         """ Start the main controller loop """
 
+        self.logger.info("Controller started")
+
+        self.on_init()
+
         while True:
 
             self.mq_consumer.fetch(enable_callbacks=True)
-            self.process_event()
-            print self.state
+            self.on_tick()
+            #print self.state
             time.sleep(0.1)
 
 

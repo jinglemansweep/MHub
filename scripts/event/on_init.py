@@ -1,6 +1,8 @@
 
-def run(state, env, message=None):
+#def run(state, env, message=None):
 
-    state["on_init"] = True
+#    state["on_init"] = True
 
-    return state
+#    return state
+
+state["1"] = True
