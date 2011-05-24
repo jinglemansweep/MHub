@@ -11,6 +11,7 @@ class Plugin(object):
         self.cfg = cfg
         self.publisher = publisher
         self.logger = logger
+        self.tasks = [(0.01, self.on_millisecond)]
 
         self.scripts = dict()
         self.env = dict()
@@ -24,7 +25,7 @@ class Plugin(object):
         self.setup_scripts()
         
 
-    def on_tick(self):
+    def on_millisecond(self):
 
         """ On tick handler """
 

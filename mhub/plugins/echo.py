@@ -11,20 +11,7 @@ class Plugin(object):
         self.cfg = cfg
         self.publisher = publisher
         self.logger = logger
-        
-
-    def on_init(self):
-
-        """ Main plugin initialisation """
-
-        pass
-        
-
-    def on_tick(self):
-
-        """ On tick handler """
-
-        pass
+        self.tasks = list()
         
 
     def on_message(self, data, message):

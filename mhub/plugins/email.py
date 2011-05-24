@@ -9,7 +9,7 @@ from email import Encoders
 
 class Plugin(object):
 
-    """ Logic Processor Plugin """
+    """ Email Sending Plugin """
 
     def __init__(self, cfg, publisher, logger):
 
@@ -18,21 +18,8 @@ class Plugin(object):
         self.cfg = cfg
         self.publisher = publisher
         self.logger = logger
-        
+        self.tasks = list()
 
-    def on_init(self):
-
-        """ Main plugin initialisation """
-
-        pass
-        
-
-    def on_tick(self):
-
-        """ On tick handler """
-
-        pass
-        
 
     def on_message(self, data, message):
 

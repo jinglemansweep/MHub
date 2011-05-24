@@ -7,6 +7,8 @@ import yaml
 
 from carrot.connection import BrokerConnection
 from carrot.messaging import Consumer, Publisher
+from twisted.internet import task
+from twisted.internet import reactor
 from pprint import pprint
 
 from logsetup import DefaultLogger
@@ -91,6 +93,13 @@ class MainController(object):
                 self.logger.debug("Plugin '%s' disabled" % (name))
 
 
+    def poll_message(self):
+
+        """ Poll AMQP messages """
+
+        self.mq_consumer.fetch(enable_callbacks=True)
+
+
     def send_message(self, message, key="action.default"):
 
         """ Send an AMQP message via configured AMQP connection """
@@ -122,16 +131,6 @@ class MainController(object):
             self.initialised = True
             
 
-    def on_tick(self):
-
-        """ On process tick forwarding function """
-
-        for name, plugin in self.plugins.iteritems():
-            # self.logger.debug("Sending tick event to plugin '%s'" % (name))
-            if hasattr(plugin, "on_tick"):
-                plugin.on_tick()
-
-
     def start(self):
 
         """ Start the main controller loop """
@@ -140,11 +139,17 @@ class MainController(object):
 
         self.on_init()
 
-        while True:
+        mq_task = task.LoopingCall(self.poll_message)
+        mq_task.start(0.1)
 
-            self.mq_consumer.fetch(enable_callbacks=True)
-            self.on_tick()
-            #print self.state
-            time.sleep(0.1)
+        for plugin_name, plugin_inst in self.plugins.iteritems():
+            if not hasattr(plugin_inst, "tasks"): continue
+            plugin_tasks = plugin_inst.tasks
+            for plugin_task in plugin_tasks:
+                self.logger.debug("Registered '%s' from '%s' every %.2f seconds" % (plugin_task[1].__name__,
+                                                                                  plugin_name,
+                                                                                  plugin_task[0]))
+                task_obj = task.LoopingCall(plugin_task[1])
+                task_obj.start(plugin_task[0])
 
-
+        reactor.run()

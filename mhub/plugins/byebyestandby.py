@@ -15,6 +15,7 @@ class Plugin(object):
         self.cfg = cfg
         self.publisher = publisher
         self.logger = logger
+        self.tasks = list()
         
 
     def on_init(self):
@@ -22,13 +23,6 @@ class Plugin(object):
         """ Main plugin initialisation """
 
         self.socket = socket(AF_INET, SOCK_DGRAM)
-        
-
-    def on_tick(self):
-
-        """ On tick handler """
-
-        pass
         
 
     def on_message(self, data, message):

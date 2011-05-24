@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name = "mhub",
-    version = "0.01",
+    version = "0.03",
     author = "JingleManSweep",
     author_email = "jinglemansweep@gmail.com",
     description = "AMQP Based Home Automation Framework",
