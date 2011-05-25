@@ -1,33 +1,17 @@
 # Summary
 
-mHub is an AMQP based home automation platform providing high-level flow and state control using JavaScript scripts (courtesy of SpiderMonkey). Additional inputs and outputs can be added using simple AMQP producer/consumer concepts.
+MHub is an AMQP based messaging event platform primarily targeted for home automation scenarios.
 
-# Messaging
+It consists of a server component which simply acts as a plugin execution engine.
+A client component is also provided to send AMQP messages to the platform for more adhoc uses.
+Both of these components communicate with a compatible AMQP server such as RabbitMQ on a
+system created and managed "mhub" exchange.
 
-All messages are sent and received using AMQP routing keys. This key is basically a ID namespacing the message into basic categories, actions and events. Each message should follow the same structure which should encapsulate all configuration and state for all plugins.
+The main functionality of the platform is contained within the plugins.
+Each plugin should simply translate between AMQP messages and real life inputs and outputs.
+For example, the RSS feed plugin simply polls RSS feeds at a configured interval and converts any
+new articles into AMQP messages. A plugin can also respond to any AMQP messages sent as with the
+Twitter plugin which not only polls configured timelines converting new tweets to messages,
+but also responds to specific messages and posts updates to Twitter.
 
-## Exchange
-
-A topic based AMQP exchange is configured using the name `mhub`.
-
-## Routing Keys
-
-* input.[plugin]
-* output.[plugin]
-
-## Message Structure
-
-The standard message structure is as follows. It allows the specification of a device (some plugins may only require or offer a single device, in this case the string "default" should be used). It also allows for the specication of a particular command as well as a map of parameters to use when actioning the command.
-
-    {"device": "", "cmd": "", "params": {}}
-
-### Examples
-
-MPD:
-
-    {"device": "default", "cmd": "volume_up", "params": {"amount": 5}}
-
-X10:
-
-    {"device": "a8", "cmd": "on"}
-
+See the wiki for more information.
