@@ -1,4 +1,5 @@
 import datetime
+import os
 
 class Plugin(object):
 
@@ -31,7 +32,7 @@ class Plugin(object):
 
         ctx = self.get_context()
 
-        for script in self.scripts.get("on_tick"):
+        for script in self.scripts.get("on_tick", list()):
             exec(script, ctx)
 
         #self.logger.debug("State:")
@@ -45,7 +46,8 @@ class Plugin(object):
         ctx = self.get_context()
         ctx["message"] = data
 
-        for script in self.scripts.get("on_message"):
+
+        for script in self.scripts.get("on_message", list()):
             exec(script, ctx)
 
         self.state = ctx.get("state")
@@ -96,6 +98,8 @@ class Plugin(object):
 
         """ Setup configured init, timed and event scripts """
 
+        scripts_path = os.path.expanduser(self.cfg.get("scripts_path"))
+        
         scripts = self.cfg.get("scripts", dict())
 
         on_init = scripts.get("on_init", list())
@@ -104,8 +108,12 @@ class Plugin(object):
 
         for trigger, scripts in scripts.iteritems():
             for filename in scripts:
-                fh = open(filename, "r")
-                contents = "".join(fh.readlines())
-                if not trigger in self.scripts:
-                    self.scripts[trigger] = list()
-                self.scripts[trigger].append(contents)
+                script_filename = os.path.join(scripts_path, filename)
+                if os.path.exists(script_filename):
+                    fh = open(script_filename, "r")
+                    contents = "".join(fh.readlines())
+                    if not trigger in self.scripts:
+                        self.scripts[trigger] = list()
+                    self.scripts[trigger].append(contents)
+                else:
+                    self.logger.debug("Script not found")

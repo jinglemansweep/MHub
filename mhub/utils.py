@@ -66,24 +66,34 @@ def client_bootstrap():
                       default="default",
                       help="Plugin or provider key [default: %default]")
 
+    parser.add_option("--host",
+                      dest="host",
+                      default=None,
+                      help="AMQP hostname or address [default: %default]")
+
+    parser.add_option("--port",
+                      dest="port",
+                      default=None,
+                      help="AMQP port [default: %default]")
+
     parser.add_option("-a",
                       "--action",
                       dest="action",
                       default="test",
                       help="Action to send [default: %default]")
 
-    parser.add_option("-p",
-                      "--params",
-                      dest="params",
+    parser.add_option("-d",
+                      "--data",
+                      dest="data",
                       default=None,
-                      help="Params to send [default: %default]")
+                      help="Data to send [default: %default]")
 
     (options, args) = parser.parse_args()
 
-    if options.params is not None:
-        params = ast.literal_eval(options.params)
+    if options.data is not None:
+        data = ast.literal_eval(options.data)
     else:
-        params = dict()
+        data = dict()
 
     from mhub.controllers import MainController
     controller = MainController(options, args)
@@ -91,19 +101,37 @@ def client_bootstrap():
     routing_key = "input.%s" % (options.key)
     action = options.action
 
-    controller.send_message({"action": action, "params": params}, key=routing_key)
+    controller.send_message({"action": action, "params": data}, key=routing_key)
 
 
 def configurator(filename=None):
 
     base_dir = os.path.join(BaseDirectory.xdg_config_home, "mhub")
     if not os.path.exists(base_dir): os.makedirs(base_dir)
+
     if filename is None: filename = os.path.join(base_dir, "config.yml")
+
+    plugins_path = os.path.join(base_dir, "plugins")
+    if not os.path.exists(plugins_path): os.makedirs(plugins_path)
+
+    scripts_path = os.path.join(base_dir, "scripts")
+    if not os.path.exists(scripts_path): os.makedirs(scripts_path)
+
+    open(os.path.join(scripts_path, "on_init.py"), "a").close()
+    open(os.path.join(scripts_path, "on_message.py"), "a").close()
+    open(os.path.join(scripts_path, "on_tick.py"), "a").close()
+
     if os.path.exists(filename):
+
         stream = file(filename, "r")
         cfg = yaml.load(stream)
+
     else:
+
         cfg = {
+            "general": {
+                "plugins_path": os.path.join(base_dir, "plugins")
+            },
             "amqp": {
                 "host": "localhost",
                 "port": 5672,
@@ -111,22 +139,52 @@ def configurator(filename=None):
                 "password": "guest"
             },
             "plugins": {
+                "byebyestandby": {
+                    "enabled": True,
+                    "host": "192.168.1.100",
+                    "port": 53008
+                },
+                "echo": {
+                    "enabled": True
+                },
+                "email": {
+                    "enabled": True,
+                    "from_address": "user@gmail.com",
+                    "smtp_host": "smtp.gmail.com",
+                    "smtp_port": 587,
+                    "smtp_username": "user@gmail.com",
+                    "smtp_password": "ChangeMe",
+                    "smtp_start_tls": True
+                },
                 "logic_processor": {
                     "enabled": True,
+                    "scripts_path": os.path.join(base_dir, "scripts"),
                     "scripts": {
-                       "on_init": ["scripts/event/on_init.py"],
-                        "on_message": ["scripts/event/on_message.py"],
-                        "on_tick": ["scripts/timed/on_tick.py"]
+                       "on_init": ["on_init.py"],
+                        "on_message": ["on_message.py"],
+                        "on_tick": ["on_tick.py"]
                     }
                 },
-                "byebyestandby": {
-                    "enabled": True
+                "twitter": {
+                    "enabled": True,
+                    "consumer_key": "czjLv9TriwG8hZecPRsVA",
+                    "consumer_secret_key": "T5XYR3MIWcTVBe4V4ENrWBPeUSwChKz950xvrUoz98",
+                    "access_token_key": "ChangeMe",
+                    "access_token_secret": "ChangeMe",
+                    "timelines": ["BBCNews"],
+                    "poll_interval": 300
+                },
+                "websocket": {
+                    "enabled": False
                 }
             }
         }
+
         stream = file(filename, "w")
         yaml.dump(cfg, stream)
+
     stream.close()
+
     return cfg
 
 

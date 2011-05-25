@@ -26,7 +26,7 @@ class Plugin(object):
                                         websocket_app,
                                         handler_class=WebSocketHandler)
 
-        self.server.serve_forever()
+        #self.server.serve_forever()
         #thread.start_new_thread(self.start_server, ())
 
         

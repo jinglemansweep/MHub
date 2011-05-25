@@ -53,8 +53,11 @@ class MainController(object):
 
         amqp_cfg = self.cfg.get("amqp")
 
-        self.mq_connection = BrokerConnection(hostname=amqp_cfg.get("host"),
-                                              port=amqp_cfg.get("port"),
+        amqp_host = self.options.host if hasattr(self.options, "host") else amqp_cfg.get("host")
+        amqp_port = self.options.port if hasattr(self.options, "port") else amqp_cfg.get("port")
+
+        self.mq_connection = BrokerConnection(hostname=amqp_host,
+                                              port=amqp_port,
                                               userid=amqp_cfg.get("username"),
                                               password=amqp_cfg.get("password"),
                                               virtual_host=amqp_cfg.get("vhost"))
@@ -79,16 +82,22 @@ class MainController(object):
 
         plugins_cfg = self.cfg.get("plugins")
 
-        plugins_path = os.path.join(os.path.dirname(__file__), "plugins")
+        base_plugins_path = os.path.join(os.path.dirname(__file__), "plugins")
+        user_plugins_path = os.path.expanduser(self.cfg.get("general").get("plugins_path"))
 
         for name, cfg in plugins_cfg.iteritems():
             if cfg.get("enabled"):
                 self.logger.info("Plugin '%s' registered" % (name))
                 self.logger.debug("Cfg: %s" % (cfg))
-                plugin_path = os.path.join(plugins_path, "%s.py" % (name))
+                plugin_filename = "%s.py" % (name)
+                plugin_path = os.path.join(user_plugins_path, plugin_filename)
+                if not os.path.exists(plugin_path):
+                    plugin_path = os.path.join(base_plugins_path, plugin_filename)
                 if os.path.exists(plugin_path):
                     plugin_cls = imp.load_source("Plugin", plugin_path)
                     self.plugins[name] = plugin_cls.Plugin(cfg, self.mq_publisher, self.logger)
+                else:
+                    self.logger.debug("Plugin '%s' not found" % (name))
             else:
                 self.logger.debug("Plugin '%s' disabled" % (name))
 
@@ -140,16 +149,18 @@ class MainController(object):
         self.on_init()
 
         mq_task = task.LoopingCall(self.poll_message)
-        mq_task.start(0.1)
+        mq_task.start(0.01)
 
         for plugin_name, plugin_inst in self.plugins.iteritems():
             if not hasattr(plugin_inst, "tasks"): continue
             plugin_tasks = plugin_inst.tasks
             for plugin_task in plugin_tasks:
-                self.logger.debug("Registered '%s' from '%s' every %.2f seconds" % (plugin_task[1].__name__,
+                interval = plugin_task[0]
+                func = plugin_task[1]
+                self.logger.debug("Registered '%s' from '%s' every %.2f seconds" % (func.__name__,
                                                                                   plugin_name,
-                                                                                  plugin_task[0]))
-                task_obj = task.LoopingCall(plugin_task[1])
-                task_obj.start(plugin_task[0])
+                                                                                  interval))
+                task_obj = task.LoopingCall(func)
+                task_obj.start(interval)
 
         reactor.run()

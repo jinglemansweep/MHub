@@ -1,3 +1,5 @@
-pyyaml
 carrot
+feedparser
 python-twitter
+pyyaml
+twisted
