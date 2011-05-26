@@ -53,13 +53,11 @@ class MainController(object):
 
         amqp_cfg = self.cfg.get("amqp")
 
-        amqp_host = self.options.host if hasattr(self.options, "host") else amqp_cfg.get("host")
-        amqp_port = self.options.port if hasattr(self.options, "port") else amqp_cfg.get("port")
+        amqp_host = self.options.host if self.options.host is not None else amqp_cfg.get("host")
+        amqp_port = self.options.port if self.options.port is not None else amqp_cfg.get("port")
 
         self.mq_exchange = Exchange("mhub",
-                                    "topic",
-                                    durable=False,
-                                    auto_delete=True)
+                                    "topic")
         
         self.mq_queue = Queue("input",
                               exchange=self.mq_exchange,
@@ -123,7 +121,7 @@ class MainController(object):
 
         """ Send an AMQP message via configured AMQP connection """
 
-        self.mq_publisher.send(message)
+        self.mq_producer.publish(message, routing_key=key)
 
 
     def on_message(self, data, message):
