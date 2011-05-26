@@ -6,38 +6,14 @@ import time
 import yaml
 from xdg import BaseDirectory
 
+from web import generate_app
+
 
 def server_bootstrap():
 
     """ Command Line Bootstrap Function """
 
-    usage = "%prog or type %prog -h (--help) for help"
-    description = "MHub"
-    version = "v0.1"
-
-    parser = optparse.OptionParser(usage=usage, description=description, version=version)
-
-    parser.add_option("-v",
-                      action="count",
-                      dest="verbosity",
-                      default=3,
-                      help="Verbosity. Add more -v to be more verbose (%s)")
-
-    parser.add_option("-z",
-                      "--logfile",
-                      dest="logfile",
-                      default=None,
-                      help="Log to file instead of console")
-
-    parser.add_option("--host",
-                      dest="host",
-                      default=None,
-                      help="AMQP hostname or address [default: %default]")
-
-    parser.add_option("--port",
-                      dest="port",
-                      default=None,
-                      help="AMQP port [default: %default]")
+    parser = generate_option_parser()
     
     (options, args) = parser.parse_args()
 
@@ -50,39 +26,7 @@ def client_bootstrap():
 
     """ Command Line Bootstrap Function """
 
-    usage = "%prog or type %prog -h (--help) for help"
-    description = "MHub"
-    version = "v0.1"
-
-    parser = optparse.OptionParser(usage=usage, description=description, version=version)
-
-    parser.add_option("-v",
-                      action="count",
-                      dest="verbosity",
-                      default=3,
-                      help="Verbosity. Add more -v to be more verbose (%s)")
-
-    parser.add_option("-z",
-                      "--logfile",
-                      dest="logfile",
-                      default=None,
-                      help="Log to file instead of console")
-
-    parser.add_option("-k",
-                      "--key",
-                      dest="key",
-                      default="default",
-                      help="Plugin or provider key [default: %default]")
-
-    parser.add_option("--host",
-                      dest="host",
-                      default=None,
-                      help="AMQP hostname or address [default: %default]")
-
-    parser.add_option("--port",
-                      dest="port",
-                      default=None,
-                      help="AMQP port [default: %default]")
+    parser = generate_option_parser()
 
     parser.add_option("-a",
                       "--action",
@@ -110,6 +54,21 @@ def client_bootstrap():
 
     controller.send_message({"action": action, "params": data})
 
+
+def web_bootstrap():
+
+    """ Web interface bootstrap function """
+
+    parser = generate_option_parser()
+
+    (options, args) = parser.parse_args()
+
+    from mhub.controllers import MainController
+    controller = MainController(options, args)
+
+    app = generate_app(controller=controller)
+    app.run()
+    
 
 def configurator(filename=None):
 
@@ -202,6 +161,64 @@ def configurator(filename=None):
     stream.close()
 
     return cfg
+
+
+def generate_option_parser():
+
+    """ Get command line option parser """
+
+    defaults = get_defaults()
+    metadata = defaults.get("metadata")
+
+    usage = metadata.get("usage")
+    description = metadata.get("description")
+    version = metadata.get("version")
+
+    parser = optparse.OptionParser(usage=usage, description=description, version=version)
+    parser = add_default_options(parser)
+
+    return parser
+
+def get_defaults():
+
+    """ Default common configuration """
+
+    defaults = {
+        "metadata": {
+            "usage": "%prog or type %prog -h (--help) for help",
+            "description": "MHub",
+            "version": "v0.1"
+        }
+    }
+
+    return defaults
+
+
+def add_default_options(parser):
+
+    parser.add_option("-v",
+                      action="count",
+                      dest="verbosity",
+                      default=3,
+                      help="Verbosity. Add more -v to be more verbose (%s)")
+
+    parser.add_option("-z",
+                      "--logfile",
+                      dest="logfile",
+                      default=None,
+                      help="Log to file instead of console")
+
+    parser.add_option("--host",
+                      dest="host",
+                      default=None,
+                      help="AMQP hostname or address [default: %default]")
+
+    parser.add_option("--port",
+                      dest="port",
+                      default=None,
+                      help="AMQP port [default: %default]")
+
+    return parser
 
 
 class Timer(object):

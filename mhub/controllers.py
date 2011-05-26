@@ -58,7 +58,8 @@ class MainController(object):
         amqp_port = self.options.port if self.options.port is not None else amqp_cfg.get("port")
 
         self.mq_exchange = Exchange(name="mhub",
-                                    type="fanout")
+                                    type="fanout",
+                                    durable=False)
         
         self.mq_queue = Queue(name="queue-%s-%i" % (amqp_host, random.randint(0, 255)),
                               exchange=self.mq_exchange)
