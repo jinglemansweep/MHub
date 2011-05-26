@@ -82,11 +82,7 @@ class Plugin(object):
 
             if self.first_run or dt.get("new_%s" % (scope)):
 
-                self.logger.debug("Regenerating schedules for '%s'" % (scope))
-
                 td_dict = dict()
-
-                hour = schedule.get("hour", 0)
 
                 for interval in self.intervals:
                     value = schedule.get(interval, -1)
@@ -99,7 +95,7 @@ class Plugin(object):
                 td = td - datetime.timedelta(minutes=offset)
 
                 s = td.seconds
-                hours = td.seconds // 3600
+                hours = s // 3600
                 s = s - (hours * 3600)
                 minutes = s // 60
                 seconds = s - (minutes * 60)
@@ -110,12 +106,12 @@ class Plugin(object):
                     "second": seconds
                 }
 
+                self.logger.debug("Schedule '%s': %02d:%02d:%02d" % (name, hours, minutes, seconds))
+
                 schedule["actual"] = actuals
 
                 schedule["fired"] = False
                 
-                self.first_run = False
-
             if dt.get("new_second"):
 
                 actuals = schedule.get("actual")
@@ -146,3 +142,5 @@ class Plugin(object):
                     })
 
             self.schedules[name] = schedule
+
+        self.first_run = False

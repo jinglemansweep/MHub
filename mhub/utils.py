@@ -149,6 +149,16 @@ def configurator(filename=None):
                     "enabled": False,
                     "lircd_socket": "/dev/lircd"
                 },
+                "schedule": {
+                    "enabled": False,
+                    "publish_intervals": ["year", "month", "day", "hour"],
+                    "schedules": {
+                        "morning": {
+                            "scope": "day",
+                            "hour": 8, "minute": 0, "fuzziness": 10
+                        }
+                    }
+                },
                 "websocket": {
                     "enabled": False
                 }
