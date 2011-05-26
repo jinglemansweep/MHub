@@ -122,8 +122,7 @@ class MainController(object):
 
         """ Send an AMQP message via configured AMQP connection """
 
-        print message, key
-
+        self.logger.debug("MQ Sent: [%s] %s" % (key, message))
         self.mq_producer.publish(message, routing_key=key)
 
 

@@ -148,7 +148,7 @@ def configurator(filename=None):
             },
             "plugins": {
                 "byebyestandby": {
-                    "enabled": True,
+                    "enabled": False,
                     "host": "192.168.1.100",
                     "port": 53008
                 },
@@ -156,7 +156,7 @@ def configurator(filename=None):
                     "enabled": True
                 },
                 "email": {
-                    "enabled": True,
+                    "enabled": False,
                     "from_address": "user@gmail.com",
                     "smtp_host": "smtp.gmail.com",
                     "smtp_port": 587,
@@ -165,7 +165,7 @@ def configurator(filename=None):
                     "smtp_start_tls": True
                 },
                 "logic_processor": {
-                    "enabled": True,
+                    "enabled": False,
                     "scripts_path": os.path.join(base_dir, "scripts"),
                     "scripts": {
                        "on_init": ["on_init.py"],
@@ -174,13 +174,22 @@ def configurator(filename=None):
                     }
                 },
                 "twitter": {
-                    "enabled": True,
+                    "enabled": False,
                     "consumer_key": "czjLv9TriwG8hZecPRsVA",
                     "consumer_secret_key": "T5XYR3MIWcTVBe4V4ENrWBPeUSwChKz950xvrUoz98",
                     "access_token_key": "ChangeMe",
                     "access_token_secret": "ChangeMe",
                     "timelines": ["BBCNews"],
                     "poll_interval": 300
+                },
+                "rss": {
+                    "enabled": False,
+                    "feeds": ["http://feeds.bbci.co.uk/news/rss.xml"],
+                    "poll_interval": 300
+                },
+                "lirc": {
+                    "enabled": False,
+                    "lircd_socket": "/dev/lircd"
                 },
                 "websocket": {
                     "enabled": False
