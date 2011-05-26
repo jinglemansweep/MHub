@@ -29,9 +29,17 @@ def server_bootstrap():
                       default=None,
                       help="Log to file instead of console")
 
+    parser.add_option("--host",
+                      dest="host",
+                      default=None,
+                      help="AMQP hostname or address [default: %default]")
+
+    parser.add_option("--port",
+                      dest="port",
+                      default=None,
+                      help="AMQP port [default: %default]")
     
     (options, args) = parser.parse_args()
-
 
     from mhub.controllers import MainController
     controller = MainController(options, args, server=True)
