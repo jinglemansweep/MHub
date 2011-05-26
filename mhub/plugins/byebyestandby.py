@@ -12,6 +12,9 @@ class Plugin(object):
 
         """ Constructor """
 
+        self.name = "byebyestandby"
+        self.description = "ByeByeStandby home automation integration"
+        self.author = "MHub"
         self.cfg = cfg
         self.producer = producer
         self.logger = logger
@@ -31,7 +34,7 @@ class Plugin(object):
 
         action, params = data.get("action"), data.get("params")
 
-        if action == "byebyestandby":
+        if action == "%s.action" % (self.name):
 
             device, state = params.get("device", None), params.get("state", None)
 

@@ -9,10 +9,13 @@ class Plugin(object):
 
         """ Constructor """
 
+        self.name = "logic_processor"
+        self.description = "Simple user script logic processor"
+        self.author = "MHub"
         self.cfg = cfg
         self.producer = producer
         self.logger = logger
-        self.tasks = [(0.01, self.on_millisecond)]
+        self.tasks = [(0.01, self.on_tick)]
 
         self.scripts = dict()
         self.env = dict()
@@ -26,7 +29,7 @@ class Plugin(object):
         self.setup_scripts()
         
 
-    def on_millisecond(self):
+    def on_tick(self):
 
         """ On tick handler """
 

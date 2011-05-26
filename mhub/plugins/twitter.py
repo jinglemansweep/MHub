@@ -10,6 +10,9 @@ class Plugin(object):
 
         """ Constructor """
 
+        self.name = "twitter"
+        self.description = "Twitter integration"
+        self.author = "MHub"
         self.cfg = cfg
         self.producer = producer
         self.logger = logger
@@ -44,7 +47,7 @@ class Plugin(object):
                     ts = status.created_at_in_seconds
                     if self.first_run or ts >= self.last_poll[user]:
                         self.producer.publish({
-                            "action": "twitter_update",
+                            "action": "%s.input" % (self.name),
                             "params": {"user": user, "body": status.text}
                         })
                         self.last_poll[user] = ts + 1
@@ -59,7 +62,7 @@ class Plugin(object):
 
         action, params = data.get("action"), data.get("params")
 
-        if action == "tweet":
+        if action == "%s.action" % (self.name):
 
             body = params.get("body", "No Body")
 

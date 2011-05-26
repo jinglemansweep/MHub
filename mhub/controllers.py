@@ -2,6 +2,7 @@
 import datetime
 import imp
 import os
+import random
 import time
 import yaml
 
@@ -57,11 +58,10 @@ class MainController(object):
         amqp_port = self.options.port if self.options.port is not None else amqp_cfg.get("port")
 
         self.mq_exchange = Exchange(name="mhub",
-                                    type="topic")
+                                    type="fanout")
         
-        self.mq_queue = Queue(name="input",
-                              exchange=self.mq_exchange,
-                              routing_key="input.*")
+        self.mq_queue = Queue(name="queue-%s-%i" % (amqp_host, random.randint(0, 255)),
+                              exchange=self.mq_exchange)
 
         self.mq_connection = BrokerConnection(hostname=amqp_host,
                                               port=amqp_port,
@@ -118,12 +118,12 @@ class MainController(object):
         return message
 
 
-    def send_message(self, message, key="action.default"):
+    def send_message(self, message):
 
         """ Send an AMQP message via configured AMQP connection """
 
-        self.logger.debug("MQ Sent: [%s] %s" % (key, message))
-        self.mq_producer.publish(message, routing_key=key)
+        self.logger.debug("MQ Sent: %s" % (message))
+        self.mq_producer.publish(message)
 
 
     def on_message(self, data, message):

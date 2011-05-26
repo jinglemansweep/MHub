@@ -106,10 +106,9 @@ def client_bootstrap():
     from mhub.controllers import MainController
     controller = MainController(options, args)
 
-    routing_key = "input.%s" % (options.key)
     action = options.action
 
-    controller.send_message({"action": action, "params": data}, key=routing_key)
+    controller.send_message({"action": action, "params": data})
 
 
 def configurator(filename=None):

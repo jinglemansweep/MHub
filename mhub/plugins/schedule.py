@@ -9,6 +9,9 @@ class Plugin(object):
 
         """ Constructor """
 
+        self.name = "schedule"
+        self.description = "Date and time based scheduling"
+        self.author = "MHub"
         self.cfg = cfg
         self.producer = producer
         self.logger = logger

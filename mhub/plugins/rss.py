@@ -9,6 +9,9 @@ class Plugin(object):
 
         """ Constructor """
 
+        self.name = "rss"
+        self.description = "RSS feed integration"
+        self.author = "MHub"
         self.cfg = cfg
         self.producer = producer
         self.logger = logger
@@ -28,14 +31,19 @@ class Plugin(object):
         feeds = self.cfg.get("feeds")
 
         for url in feeds:
+
             self.last_poll[url] = datetime.datetime.now()
             feed = feedparser.parse(url)
+
             for entry in feed.entries:
+
                 ets = entry.date_parsed
                 ts = datetime.datetime(*ets[:7])
+
                 if self.first_run or ts >= self.last_poll[url]:
+
                     self.producer.publish({
-                        "action": "rss",
+                        "action": "%s.input" % (self.name),
                         "params": {
                             "feed": url,
                             "title": entry.title,
@@ -43,5 +51,7 @@ class Plugin(object):
                             "link": entry.link
                         }
                     })
+
                     self.last_poll[url] = ts
+
         self.first_run = False

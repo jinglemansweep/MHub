@@ -13,6 +13,9 @@ class Plugin(object):
 
         """ Constructor """
 
+        self.name = "websocket"
+        self.description = "HTML5 WebSocket integration"
+        self.author = "MHub"
         self.cfg = cfg
         self.producer = producer
         self.logger = logger

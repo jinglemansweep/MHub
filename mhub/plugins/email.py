@@ -15,6 +15,9 @@ class Plugin(object):
 
         """ Constructor """
 
+        self.name = "email"
+        self.description = "Email integration"
+        self.author = "MHub"
         self.cfg = cfg
         self.producer = producer
         self.logger = logger
@@ -27,7 +30,7 @@ class Plugin(object):
 
         action, params = data.get("action"), data.get("params")
 
-        if action == "email":
+        if action == "%s.action" % (self.name):
 
             recipients = params.get("recipients")
             subject = params.get("subject", "No Subject")

@@ -9,6 +9,9 @@ class Plugin(object):
 
         """ Constructor """
 
+        self.name = "lirc"
+        self.description = "Linux infrared remote control daemon integration"
+        self.author = "MHub"
         self.cfg = cfg
         self.producer = producer
         self.logger = logger
@@ -30,7 +33,20 @@ class Plugin(object):
     def process_events(self):
 
         try:
-            data = self.socket.recv(1024)
-            self.logger.debug(data)
+            data = str(self.socket.recv(1024))
         except:
-            pass
+            data = ""
+
+        parts = data.split("\n")[0].split(" ")
+
+        if len(parts) == 4:
+
+            self.producer.publish({
+                "action": "%s.input",
+                "params": {
+                    "raw": parts[0],
+                    "count": parts[1],
+                    "command": parts[2],
+                    "remote": parts[3]
+                }
+            })

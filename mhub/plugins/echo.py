@@ -8,6 +8,9 @@ class Plugin(object):
 
         """ Constructor """
 
+        self.name = "echo"
+        self.description = "Simple message echo service"
+        self.author = "MHub"
         self.cfg = cfg
         self.producer = producer
         self.logger = logger
