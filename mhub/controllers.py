@@ -56,12 +56,12 @@ class MainController(object):
         amqp_host = self.options.host if self.options.host is not None else amqp_cfg.get("host")
         amqp_port = self.options.port if self.options.port is not None else amqp_cfg.get("port")
 
-        self.mq_exchange = Exchange("mhub",
-                                    "topic")
+        self.mq_exchange = Exchange(name="mhub",
+                                    type="topic")
         
-        self.mq_queue = Queue("input",
+        self.mq_queue = Queue(name="input",
                               exchange=self.mq_exchange,
-                              key="input.*")
+                              routing_key="input.*")
 
         self.mq_connection = BrokerConnection(hostname=amqp_host,
                                               port=amqp_port,
@@ -71,11 +71,12 @@ class MainController(object):
 
         self.mq_channel = self.mq_connection.channel()
 
-        self.mq_consumer = Consumer(self.mq_channel, self.mq_queue)
+        self.mq_consumer = Consumer(self.mq_channel,
+                                    self.mq_queue)
 
         self.mq_consumer.register_callback(self.on_message)
         
-        self.mq_producer = Producer(self.mq_channel,
+        self.mq_producer = Producer(channel=self.mq_channel,
                                     exchange=self.mq_exchange,
                                     serializer="json")
         
@@ -120,6 +121,8 @@ class MainController(object):
     def send_message(self, message, key="action.default"):
 
         """ Send an AMQP message via configured AMQP connection """
+
+        print message, key
 
         self.mq_producer.publish(message, routing_key=key)
 
