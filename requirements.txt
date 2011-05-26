@@ -1,0 +1,5 @@
+kombu
+feedparser
+python-twitter
+pyyaml
+twisted
