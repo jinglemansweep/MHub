@@ -6,12 +6,12 @@ class Plugin(object):
 
     """ Twitter Poster Plugin """
 
-    def __init__(self, cfg, publisher, logger):
+    def __init__(self, cfg, producer, logger):
 
         """ Constructor """
 
         self.cfg = cfg
-        self.publisher = publisher
+        self.producer = producer
         self.logger = logger
 
         
@@ -43,7 +43,7 @@ class Plugin(object):
                 for status in statuses:
                     ts = status.created_at_in_seconds
                     if self.first_run or ts >= self.last_poll[user]:
-                        self.publisher.send({
+                        self.producer.publish({
                             "action": "twitter_update",
                             "params": {"user": user, "body": status.text}
                         })

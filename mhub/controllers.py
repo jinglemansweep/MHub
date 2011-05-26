@@ -5,8 +5,8 @@ import os
 import time
 import yaml
 
-from carrot.connection import BrokerConnection
-from carrot.messaging import Consumer, Publisher
+from kombu.connection import BrokerConnection
+from kombu.messaging import Exchange, Queue, Producer, Consumer
 from twisted.internet import task
 from twisted.internet import reactor
 from pprint import pprint
@@ -56,25 +56,31 @@ class MainController(object):
         amqp_host = self.options.host if hasattr(self.options, "host") else amqp_cfg.get("host")
         amqp_port = self.options.port if hasattr(self.options, "port") else amqp_cfg.get("port")
 
+        self.mq_exchange = Exchange("mhub",
+                                    "topic",
+                                    durable=False,
+                                    auto_delete=True)
+        
+        self.mq_queue = Queue("input",
+                              exchange=self.mq_exchange,
+                              key="input.*")
+
         self.mq_connection = BrokerConnection(hostname=amqp_host,
                                               port=amqp_port,
                                               userid=amqp_cfg.get("username"),
                                               password=amqp_cfg.get("password"),
                                               virtual_host=amqp_cfg.get("vhost"))
 
-        self.mq_consumer = Consumer(connection=self.mq_connection, 
-                                    queue="input", 
-                                    exchange="mhub", 
-                                    exchange_type="topic", 
-                                    routing_key="input.*")
+        self.mq_channel = self.mq_connection.channel()
 
-        self.mq_publisher = Publisher(connection=self.mq_connection,
-                                      exchange="mhub",
-                                      exchange_type="topic",
-                                      routing_key="input.default")
+        self.mq_consumer = Consumer(self.mq_channel, self.mq_queue)
 
         self.mq_consumer.register_callback(self.on_message)
-
+        
+        self.mq_producer = Producer(self.mq_channel,
+                                    exchange=self.mq_exchange,
+                                    serializer="json")
+        
 
     def setup_plugins(self):
 
@@ -95,7 +101,7 @@ class MainController(object):
                     plugin_path = os.path.join(base_plugins_path, plugin_filename)
                 if os.path.exists(plugin_path):
                     plugin_cls = imp.load_source("Plugin", plugin_path)
-                    self.plugins[name] = plugin_cls.Plugin(cfg, self.mq_publisher, self.logger)
+                    self.plugins[name] = plugin_cls.Plugin(cfg, self.mq_producer, self.logger)
                 else:
                     self.logger.debug("Plugin '%s' not found" % (name))
             else:
@@ -106,7 +112,11 @@ class MainController(object):
 
         """ Poll AMQP messages """
 
-        self.mq_consumer.fetch(enable_callbacks=True)
+        message = self.mq_consumer.queues[0].get()
+        if message:
+            self.mq_consumer.receive(message.payload, message)
+
+        return message
 
 
     def send_message(self, message, key="action.default"):

@@ -5,12 +5,12 @@ class Plugin(object):
 
     """ RSS Feed Plugin """
 
-    def __init__(self, cfg, publisher, logger):
+    def __init__(self, cfg, producer, logger):
 
         """ Constructor """
 
         self.cfg = cfg
-        self.publisher = publisher
+        self.producer = producer
         self.logger = logger
         
 
@@ -34,7 +34,7 @@ class Plugin(object):
                 ets = entry.date_parsed
                 ts = datetime.datetime(*ets[:7])
                 if self.first_run or ts >= self.last_poll[url]:
-                    self.publisher.send({
+                    self.producer.publish({
                         "action": "rss",
                         "params": {
                             "feed": url,

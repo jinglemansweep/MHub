@@ -5,12 +5,12 @@ class Plugin(object):
 
     """ Logic Processor Plugin """
 
-    def __init__(self, cfg, publisher, logger):
+    def __init__(self, cfg, producer, logger):
 
         """ Constructor """
 
         self.cfg = cfg
-        self.publisher = publisher
+        self.producer = producer
         self.logger = logger
         self.tasks = [(0.01, self.on_millisecond)]
 
@@ -63,7 +63,7 @@ class Plugin(object):
             "state": self.state,
             "env": self.env,
             "logger": self.logger,
-            "send_message": self.publisher.send
+            "send_message": self.producer.publish
         }
         
         return ctx

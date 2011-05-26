@@ -11,12 +11,12 @@ class Plugin(object):
 
     """ Email Sending Plugin """
 
-    def __init__(self, cfg, publisher, logger):
+    def __init__(self, cfg, producer, logger):
 
         """ Constructor """
 
         self.cfg = cfg
-        self.publisher = publisher
+        self.producer = producer
         self.logger = logger
         self.tasks = list()
 
@@ -29,12 +29,13 @@ class Plugin(object):
 
         if action == "email":
 
-            recipients = params.get("recipients", ["jinglemansweep@gmail.com"])
+            recipients = params.get("recipients")
             subject = params.get("subject", "No Subject")
             body = params.get("body", "No Body")
 
-            self.logger.info("Sending Email")
-            self.send_email(recipients, subject, body)
+            if recipients is not None:
+                self.logger.info("Sending Email")
+                self.send_email(recipients, subject, body)
 
 
     def send_email(self, recipients, subject, body, attachments=None):

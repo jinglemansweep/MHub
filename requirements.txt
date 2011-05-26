@@ -1,5 +1,0 @@
-carrot
-feedparser
-python-twitter
-pyyaml
-twisted

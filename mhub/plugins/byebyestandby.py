@@ -8,12 +8,12 @@ class Plugin(object):
 
     """ Logic Processor Plugin """
 
-    def __init__(self, cfg, publisher, logger):
+    def __init__(self, cfg, producer, logger):
 
         """ Constructor """
 
         self.cfg = cfg
-        self.publisher = publisher
+        self.producer = producer
         self.logger = logger
         self.tasks = list()
         
