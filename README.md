@@ -14,4 +14,4 @@ new articles into AMQP messages. A plugin can also respond to any AMQP messages 
 Twitter plugin which not only polls configured timelines converting new tweets to messages,
 but also responds to specific messages and posts updates to Twitter.
 
-See the wiki for more information.
+See the wiki at [[http://github.com/jingleman/MHub/wiki]] for more information.
