@@ -159,8 +159,11 @@ class MainController(object):
 
         self.on_init()
 
+        cfg_general = self.cfg.get("general", dict())
+        mq_poll_interval = float(cfg_general.get("poll_interval", 0.1))
+
         mq_task = task.LoopingCall(self.poll_message)
-        mq_task.start(0.01)
+        mq_task.start(mq_poll_interval)
 
         for plugin_name, plugin_inst in self.plugins.iteritems():
             if not hasattr(plugin_inst, "tasks"): continue

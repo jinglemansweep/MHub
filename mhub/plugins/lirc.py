@@ -21,7 +21,7 @@ class Plugin(object):
 
         """ Main plugin initialisation """
 
-        self.tasks = [(0.10, self.process_events)]
+        self.tasks = [(0.1, self.process_events)]
         self.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.socket.setblocking(False)
         try:

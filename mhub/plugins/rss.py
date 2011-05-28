@@ -28,6 +28,8 @@ class Plugin(object):
         
     def get_feeds(self):
 
+        """ RSS feed parser helper """
+
         feeds = self.cfg.get("feeds")
 
         for url in feeds:

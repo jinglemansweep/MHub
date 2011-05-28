@@ -96,7 +96,8 @@ def configurator(filename=None):
 
         cfg = {
             "general": {
-                "plugins_path": os.path.join(base_dir, "plugins")
+                "plugins_path": os.path.join(base_dir, "plugins"),
+                "poll_interval": 0.1
             },
             "amqp": {
                 "host": "localhost",
@@ -108,7 +109,12 @@ def configurator(filename=None):
                 "byebyestandby": {
                     "enabled": False,
                     "host": "192.168.1.100",
-                    "port": 53008
+                    "port": 53008,
+                    "scenes": {
+                        "test": [
+                            {"device": "a1", "state": False}
+                        ]
+                    }
                 },
                 "echo": {
                     "enabled": True
@@ -156,6 +162,24 @@ def configurator(filename=None):
                         "morning": {
                             "scope": "day",
                             "hour": 8, "minute": 0, "fuzziness": 10
+                        }
+                    }
+                },
+                "notify": {
+                    "enabled": False,
+                    "patterns": [
+                        "twitter.*",
+                        "*.action"
+                    ]
+                },
+                "events": {
+                    "enabled": False,
+                    "events": {
+                        "test": {
+                            "triggers": ["some.trigger"],
+                            "actions": [
+                                {"action": "some.action", "params": {}}
+                            ]
                         }
                     }
                 },

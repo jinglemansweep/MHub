@@ -9,7 +9,7 @@ from email import Encoders
 
 class Plugin(object):
 
-    """ Email Sending Plugin """
+    """ Email sending plugin """
 
     def __init__(self, cfg, producer, logger):
 
@@ -24,9 +24,13 @@ class Plugin(object):
         self.tasks = list()
 
 
+    def on_init(self):
+
+        """ On initialisation handler """
+
     def on_message(self, data, message):
 
-        """ On AMQP message handler """
+        """ AMQP on-message handler """
 
         action, params = data.get("action"), data.get("params")
 
@@ -42,6 +46,8 @@ class Plugin(object):
 
 
     def send_email(self, recipients, subject, body, attachments=None):
+
+        """ Send email helper """
 
         self.logger.debug("To: %s" % (", ".join(recipients)))
         self.logger.debug("Subject: %s" % (subject))
