@@ -23,7 +23,7 @@ class Plugin(object):
         """ Main plugin initialisation """
 
         self.tasks = [
-            (0.1, self.process_schedules)
+            (0.10, self.process_schedules)
         ]
         self.env = {}
         self.intervals = ["year", "month", "day", "hour", "minute", "second"]

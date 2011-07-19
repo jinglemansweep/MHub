@@ -42,7 +42,7 @@ class Plugin(object):
         if len(parts) == 4:
 
             self.producer.publish({
-                "action": "%s.input",
+                "action": "%s.input" % (self.name),
                 "params": {
                     "raw": parts[0],
                     "count": parts[1],

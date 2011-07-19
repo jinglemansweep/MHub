@@ -4,3 +4,4 @@ feedparser
 python-twitter
 pyyaml
 twisted
+xmpppy
