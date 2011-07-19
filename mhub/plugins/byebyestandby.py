@@ -34,7 +34,7 @@ class Plugin(object):
 
         action, params = data.get("action"), data.get("params")
 
-        if action == "%s.switch" % (self.name):
+        if action == "%s.action" % (self.name):
             device, state = params.get("device", None), params.get("state", None)
             device = device.upper()
             state_desc = "ON" if state else "OFF"

@@ -24,9 +24,14 @@ class Plugin(object):
         action, params = data.get("action"), data.get("params")
 
         if action == "%s.send" % (self.name):
-            
-            pass
 
+            recipient = params.get("recipient")
+            body = params.get("body")
+
+            if recipient is not None and body is not None:
+
+                msg = xmpp.protocol.Message(recipient, body)
+                self.client.send(msg)
 
         
     def on_init(self):
