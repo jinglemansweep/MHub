@@ -5,3 +5,4 @@ python-twitter
 pyyaml
 twisted
 xmpppy
+http://www.freedesktop.org/~lanius/pyxdg-0.18.tar.gz
