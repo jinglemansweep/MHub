@@ -88,14 +88,21 @@ class Plugin(object):
 
         body = msg.getBody()
         sender = msg.getFrom()
+        sender_address = "%s@%s" % (sender.getNode(), sender.getDomain())
 
         if body is None: return
+
+        accepted = any([i in sender_address for i in self.cfg.get("whitelist", list())])
+        if not accepted:
+            self.logger.debug("Rejected XMPP message as not from whitelisted source (%s)" % (sender_address))
+            return
 
         self.producer.publish({
             "action": "%s.input" % (self.name),
             "params": {
                 "body": str(body),
                 "sender": {
+                     "address": sender_address,
                      "domain": sender.getDomain(),
                      "resource": sender.getResource(),
                      "node": sender.getNode()
