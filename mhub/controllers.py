@@ -3,6 +3,7 @@ import datetime
 import imp
 import os
 import random
+import socket
 import time
 import yaml
 
@@ -76,6 +77,8 @@ class MainController(object):
                                     self.mq_queue)
 
         self.mq_consumer.register_callback(self.on_message)
+
+        self.mq_consumer.consume()
         
         self.mq_producer = Producer(channel=self.mq_channel,
                                     exchange=self.mq_exchange,
@@ -112,11 +115,10 @@ class MainController(object):
 
         """ Poll AMQP messages """
 
-        message = self.mq_consumer.queues[0].get()
-        if message:
-            self.mq_consumer.receive(message.payload, message)
-
-        return message
+        try:
+            self.mq_connection.drain_events(timeout=0.1)
+        except socket.timeout:
+            pass
 
 
     def send_message(self, message):
@@ -131,8 +133,9 @@ class MainController(object):
 
         """ On MQ message received forwarding callback function """
 
+        self.logger.debug("AMQP message received, forwarding to plugins")
+
         for name, plugin in self.plugins.iteritems():
-            # self.logger.debug("Forwarding message to plugin '%s'" % (name))
             if hasattr(plugin, "on_message"):
                 plugin.on_message(data, message)
 

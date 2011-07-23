@@ -58,7 +58,10 @@ class Plugin(object):
         """ BBS device switcher helper """
 
         state = 1 if state else 0
-        h, u = device[0], device[1:]
-        cmd = "D:%i%s%02d:E" % (int(state), h.upper(), int(u))
-        self.socket.sendto(cmd, (self.cfg.get("host"), self.cfg.get("port")))
-        time.sleep(1)
+        try:
+            h, u = device[0], device[1:]
+            cmd = "D:%i%s%02d:E" % (int(state), h.upper(), int(u))
+            self.socket.sendto(cmd, (self.cfg.get("host"), self.cfg.get("port")))
+            time.sleep(1)
+        except:
+            self.logger.warn("ByeByeStandby connection probelm")

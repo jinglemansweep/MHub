@@ -93,9 +93,10 @@ class Plugin(object):
         if body is None: return
 
         accepted = any([i in sender_address for i in self.cfg.get("whitelist", list())])
-        if not accepted:
-            self.logger.debug("Rejected XMPP message as not from whitelisted source (%s)" % (sender_address))
-            return
+
+        self.logger.debug("XMPP message received from '%s' and was " + ("accepted" if accepted else "rejected") % sender_address)
+
+        if not accepted: return
 
         self.producer.publish({
             "action": "%s.input" % (self.name),
@@ -122,6 +123,8 @@ class Plugin(object):
         sender = presence.getFrom()
         resource = sender.getResource()
         pres_type = presence.getType()
+
+        self.logger.debug("XMPP presence received from '%s'" % sender)
 
         self.producer.publish({
             "action": "%s.presence" % (self.name),
