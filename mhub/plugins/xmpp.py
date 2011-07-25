@@ -53,6 +53,8 @@ class Plugin(object):
                                 self.cfg.get("xmpp_resource", "mhub")):
             raise IOError("Cannot authorise with server")
 
+        self.client.RegisterDisconnectHandler(self.xmpp_disconnect_callback)
+
         self.client.RegisterHandler("message", 
                                     self.xmpp_message_callback)
 
@@ -80,6 +82,13 @@ class Plugin(object):
         except KeyboardInterrupt: 
             return False
         return True
+
+
+    def xmpp_disconnect_callback(self):
+
+        """ XMPP disconnection handler callback """
+
+        self.client.reconnectAndReauth()
 
 
     def xmpp_message_callback(self, client, msg):

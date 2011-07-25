@@ -62,7 +62,7 @@ class MainController(object):
                                     type="fanout",
                                     durable=False)
         
-        self.mq_queue = Queue(name="queue-%s-%i" % (amqp_host, random.randint(0, 255)),
+        self.mq_queue = Queue(name="queue-%s" % (amqp_host),
                               exchange=self.mq_exchange)
 
         self.mq_connection = BrokerConnection(hostname=amqp_host,
@@ -125,15 +125,12 @@ class MainController(object):
 
         """ Send an AMQP message via configured AMQP connection """
 
-        self.logger.debug("MQ Sent: %s" % (message))
         self.mq_producer.publish(message)
 
 
     def on_message(self, data, message):
 
         """ On MQ message received forwarding callback function """
-
-        self.logger.debug("AMQP message received, forwarding to plugins")
 
         for name, plugin in self.plugins.iteritems():
             if hasattr(plugin, "on_message"):

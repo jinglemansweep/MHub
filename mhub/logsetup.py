@@ -25,7 +25,7 @@ class DefaultLogger(object):
 
         logger = logging.getLogger(self.name)
         help = ",".join(["%d=%s" % (4-x, logging.getLevelName((x+1)*10)) for x in xrange(5)])
-        console_format = "%(message)s"
+        console_format = "%(asctime)s %(levelname)1s %(message)s"
         file_format = "%(asctime)s %(name)s[%(process)d] %(levelname)10s %(message)s"
         log_levels = {1:50, 2:40, 3:20, 4:10, 5:1}
 
@@ -39,6 +39,6 @@ class DefaultLogger(object):
 
         else:
 
-            logging.basicConfig(level=verbosity, format=console_format)
+            logging.basicConfig(level=verbosity, format=console_format, datefmt="%Y-%m-%d %H:%M:%S")
 
         return logger
