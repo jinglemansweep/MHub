@@ -14,6 +14,7 @@ from twisted.internet import reactor
 from pprint import pprint
 
 from logsetup import DefaultLogger
+from meta import PluginHelper
 from utils import configurator
 
 
@@ -93,18 +94,28 @@ class MainController(object):
 
         base_plugins_path = os.path.join(os.path.dirname(__file__), "plugins")
         user_plugins_path = os.path.expanduser(self.cfg.get("general").get("plugins_path"))
+        cache_path = self.cfg.get("general").get("cache_path")
+        plugin_cache_path = os.path.join(cache_path, "plugins")
+
 
         for name, cfg in plugins_cfg.iteritems():
             if cfg.get("enabled"):
                 self.logger.info("Plugin '%s' registered" % (name))
                 self.logger.debug("Cfg: %s" % (cfg))
+                plugin_cache_dir = os.path.join(plugin_cache_path, name)
+                if not os.path.exists(plugin_cache_dir):
+                    os.makedirs(plugin_cache_dir)
                 plugin_filename = "%s.py" % (name)
                 plugin_path = os.path.join(user_plugins_path, plugin_filename)
                 if not os.path.exists(plugin_path):
                     plugin_path = os.path.join(base_plugins_path, plugin_filename)
                 if os.path.exists(plugin_path):
-                    plugin_cls = imp.load_source("Plugin", plugin_path)
-                    self.plugins[name] = plugin_cls.Plugin(cfg, self.mq_producer, self.logger)
+                    plugin_src = imp.load_source("Plugin", plugin_path)
+                    orig_cls = plugin_src.Plugin
+                    plugin_cls = type("Plugin", (orig_cls, PluginHelper), {})
+                    plugin_inst = plugin_cls(cfg, self.mq_producer, self.logger)
+
+                    self.plugins[name] = plugin_inst
                 else:
                     self.logger.debug("Plugin '%s' not found" % (name))
             else:

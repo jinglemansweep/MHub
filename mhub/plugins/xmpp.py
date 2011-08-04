@@ -40,6 +40,8 @@ class Plugin(object):
 
         """ On Init """
 
+        self.test()
+
         self.tasks = [(0.5, self.process_messages)]
         self.jid = xmpp.JID(self.cfg.get("xmpp_host"))
         self.user = self.jid.getNode()
@@ -89,6 +91,8 @@ class Plugin(object):
     def xmpp_disconnect_callback(self):
 
         """ XMPP disconnection handler callback """
+
+        self.logger.warn("XMPP reconnecting")
 
         self.client.reconnectAndReauth()
 
