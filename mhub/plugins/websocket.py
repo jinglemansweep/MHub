@@ -1,8 +1,8 @@
 import datetime
 import thread
 
-from gevent import pywsgi
-from geventwebsocket.handler import WebSocketHandler
+#from gevent import pywsgi
+#from geventwebsocket.handler import WebSocketHandler
 
 
 class Plugin(object):
@@ -12,14 +12,16 @@ class Plugin(object):
     name = "websocket"
     description = "HTML5 WebSocket integration"
     author = "MHub"
-    
+
+    default_config = {}
+
     def on_init(self):
 
         """ Main plugin initialisation """
 
-        self.server = pywsgi.WSGIServer(('127.0.0.1', 8000),
-                                        websocket_app,
-                                        handler_class=WebSocketHandler)
+        #self.server = pywsgi.WSGIServer(('127.0.0.1', 8000),
+        #                                websocket_app,
+        #                                handler_class=WebSocketHandler)
 
         #self.server.serve_forever()
         #thread.start_new_thread(self.start_server, ())
@@ -45,7 +47,8 @@ class Plugin(object):
 
         """ Start Websocket server """
 
-        self.server.serve_forever()
+        pass
+        # self.server.serve_forever()
 
 
 

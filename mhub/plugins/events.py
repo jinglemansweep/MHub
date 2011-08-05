@@ -8,6 +8,19 @@ class Plugin(object):
     name = "events"
     description = "Event management plugin"
     author = "MHub"
+
+    default_config = {
+        "events": {
+            "test_event": {
+                "triggers": [
+                    "some.trigger"
+                ],
+                "actions": [
+                    {"action": "some.action", "params": {}}
+                ]
+            }
+        }
+    }
             
 
     def on_message(self, data, message):

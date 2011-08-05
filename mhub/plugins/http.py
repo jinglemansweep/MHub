@@ -8,6 +8,11 @@ class Plugin(object):
     name = "http"
     description = "HTTP integration"
     author = "MHub"
+
+    default_config = {
+        "pages": ["http://www.google.co.uk"],
+        "poll_interval": 60
+    }
         
 
     def on_init(self):

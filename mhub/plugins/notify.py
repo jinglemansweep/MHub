@@ -8,7 +8,11 @@ class Plugin(object):
     name = "notify"
     description = "Notifications (libnotify)"
     author = "MHub"
-            
+
+    default_config = {
+        "patterns": ["twitter.*", "*.action"]
+    }
+
 
     def on_message(self, data, message):
 

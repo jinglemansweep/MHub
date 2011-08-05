@@ -1,5 +1,7 @@
 import os
 import yaml
+
+from socket import gethostname
 from xdg import BaseDirectory
 
 
@@ -61,11 +63,10 @@ def generate_default(config_dir,
 
     cfg = {
         "general": {
-            "name": "default",
+            "name": gethostname(),
             "plugin_dir": plugin_dir,
             "config_dir": config_dir,
             "cache_dir": cache_dir,
-            "plugins": ["echo"],
             "poll_interval": 0.1
         },
         "amqp": {

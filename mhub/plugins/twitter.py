@@ -9,6 +9,15 @@ class Plugin(object):
     name = "twitter"
     description = "Twitter integration"
     author = "MHub"
+
+    default_cfg = {
+        "consumer_key": "czjLv9TriwG8hZecPRsVA",
+        "consumer_secret_key": "T5XYR3MIWcTVBe4V4ENrWBPUSwChKz950xvrUoz98",
+        "access_token_key": "changeme",
+        "access_token_secret": "changeme",
+        "poll_interval": 300,
+        "timelines": ["BBCNews"]
+    }
     
         
     def on_init(self):

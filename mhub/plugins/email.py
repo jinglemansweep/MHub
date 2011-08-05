@@ -14,6 +14,15 @@ class Plugin(object):
     name = "email"
     description = "Email integration"
     author = "MHub"
+
+    default_config = {
+        "from_address": "user@gmail.com",
+        "host": "smtp.gmail.com",
+        "port": 587,
+        "username": "user@gmail.com",
+        "password": "password",
+        "start_tls": True
+    }
     
 
     def on_init(self):

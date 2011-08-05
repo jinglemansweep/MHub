@@ -9,6 +9,20 @@ class Plugin(object):
     name = "schedule"
     description = "Date and time based scheduling"
     author = "MHub"
+
+    default_config = {
+        "publish_intervals": ["year", "month", "day", "hour"],
+        "schedules": {
+            "morning": {
+                "hour": 8,
+                "minute": 0,
+                "scope": "day",
+                "fuzziness": 10
+            }
+        }
+
+    }
+
     
     def on_init(self):
 

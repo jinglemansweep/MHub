@@ -11,6 +11,17 @@ class Plugin(object):
     name = "byebyestandby"
     description = "ByeByeStandby home automation integration"
     author = "MHub"
+
+    default_config = {
+        "host": "192.168.1.100",
+        "port": 53008,
+        "scenes": {
+            "test_scene": {
+                "device": "a1",
+                "state": False
+            }
+        }
+    }
     
 
     def on_init(self):
@@ -21,7 +32,6 @@ class Plugin(object):
 
         self.socket = socket(AF_INET, SOCK_DGRAM)
         
-
     def on_message(self, data, message):
 
         """ On AMQP message handler """

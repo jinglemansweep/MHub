@@ -5,10 +5,16 @@ class Plugin(object):
 
     """ Schedule Plugin """
 
+
     name = "lirc"
     description = "Linux infrared remote control daemon integration"
     author = "MHub"
+
+    default_config = {
+        "lircd_socket": "/dev/lircd"
+    }
     
+
     def on_init(self):
 
         """ Main plugin initialisation """

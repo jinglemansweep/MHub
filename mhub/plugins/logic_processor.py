@@ -9,6 +9,15 @@ class Plugin(object):
     description = "Simple user script logic processor"
     author = "MHub"
     
+    default_config = {
+        "scripts": {
+            "on_init": ["on_init.py"],
+            "on_message": ["on_message.py"],
+            "on_tick": ["on_tick.py"]
+        },
+        "scripts_path": "~/scripts"
+    }
+
 
     def on_init(self):
 

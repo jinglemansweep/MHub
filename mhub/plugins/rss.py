@@ -1,3 +1,4 @@
+import datetime
 import feedparser
 
 
@@ -8,6 +9,17 @@ class Plugin(object):
     name = "rss"
     description = "RSS feed integration"
     author = "MHub"
+
+    default_config = {
+        "feeds": ["http://feeds.bbci.co.uk/news/rss.xml"],
+        "poll_interval": 300
+    }
+
+
+    def __init__(self):
+
+        pass
+
     
     def on_init(self):
 

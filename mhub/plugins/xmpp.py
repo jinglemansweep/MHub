@@ -9,6 +9,17 @@ class Plugin(object):
     name = "xmpp"
     description = "XMPP/Jabber plugin"
     author = "MHub"
+
+    default_config = {
+        "host": "gmail.com",
+        "server": "talk.google.com",
+        "port": 5223,
+        "username": "username",
+        "password": "password",
+        "resource": "MHub",
+        "acknowledge_messages": False,
+        "whitelist": []
+    }
         
 
     def on_message(self, data, message):
@@ -33,18 +44,18 @@ class Plugin(object):
         """ On Init """
 
         self.tasks = [(0.5, self.process_messages)]
-        self.jid = xmpp.JID(self.cfg.get("xmpp_host"))
+        self.jid = xmpp.JID(self.cfg.get("host"))
         self.user = self.jid.getNode()
         self.server = self.jid.getDomain()
         self.client = xmpp.Client(self.server, debug=list())
         
-        if not self.client.connect(server=(self.cfg.get("xmpp_server"),
-                                           self.cfg.get("xmpp_port", 5222))):
+        if not self.client.connect(server=(self.cfg.get("server"),
+                                           self.cfg.get("port", 5222))):
             raise IOError("Cannot connect to server")
 
-        if not self.client.auth(self.cfg.get("xmpp_username"), 
-                                self.cfg.get("xmpp_password"),
-                                self.cfg.get("xmpp_resource", "mhub")):
+        if not self.client.auth(self.cfg.get("username"), 
+                                self.cfg.get("password"),
+                                self.cfg.get("resource", "mhub")):
             raise IOError("Cannot authorise with server")
 
         self.client.RegisterDisconnectHandler(self.xmpp_disconnect_callback)
