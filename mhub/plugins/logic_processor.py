@@ -5,26 +5,20 @@ class Plugin(object):
 
     """ Logic Processor Plugin """
 
-    def __init__(self, cfg, producer, logger):
+    name = "logic_processor"
+    description = "Simple user script logic processor"
+    author = "MHub"
+    
 
-        """ Constructor """
+    def on_init(self):
 
-        self.name = "logic_processor"
-        self.description = "Simple user script logic processor"
-        self.author = "MHub"
-        self.cfg = cfg
-        self.producer = producer
-        self.logger = logger
+        """ Main plugin initialisation """
+
         self.tasks = [(0.1, self.on_tick)]
 
         self.scripts = dict()
         self.env = dict()
         self.state = dict()
-
-
-    def on_init(self):
-
-        """ Main plugin initialisation """
 
         self.setup_scripts()
         

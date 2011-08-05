@@ -11,18 +11,10 @@ class Plugin(object):
 
     """ Email sending plugin """
 
-    def __init__(self, cfg, producer, logger):
-
-        """ Constructor """
-
-        self.name = "email"
-        self.description = "Email integration"
-        self.author = "MHub"
-        self.cfg = cfg
-        self.producer = producer
-        self.logger = logger
-        self.tasks = list()
-
+    name = "email"
+    description = "Email integration"
+    author = "MHub"
+    
 
     def on_init(self):
 

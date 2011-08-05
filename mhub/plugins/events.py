@@ -5,18 +5,10 @@ class Plugin(object):
 
     """ Events plugin """
 
-    def __init__(self, cfg, producer, logger):
-
-        """ Constructor """
-
-        self.name = "events"
-        self.description = "Event management plugin"
-        self.author = "MHub"
-        self.cfg = cfg
-        self.producer = producer
-        self.logger = logger
-        self.tasks = list()
-        
+    name = "events"
+    description = "Event management plugin"
+    author = "MHub"
+            
 
     def on_message(self, data, message):
 

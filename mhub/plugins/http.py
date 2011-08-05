@@ -5,16 +5,9 @@ class Plugin(object):
 
     """ HTTP Plugin """
 
-    def __init__(self, cfg, producer, logger):
-
-        """ Constructor """
-
-        self.name = "http"
-        self.description = "HTTP integration"
-        self.author = "MHub"
-        self.cfg = cfg
-        self.producer = producer
-        self.logger = logger
+    name = "http"
+    description = "HTTP integration"
+    author = "MHub"
         
 
     def on_init(self):
@@ -42,6 +35,7 @@ class Plugin(object):
                 "params": {
                     "url": url,
                     "body": body
+                }
             })
 
 

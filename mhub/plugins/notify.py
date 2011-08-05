@@ -5,18 +5,10 @@ class Plugin(object):
 
     """ Notify Plugin """
 
-    def __init__(self, cfg, producer, logger):
-
-        """ Constructor """
-
-        self.name = "notify"
-        self.description = "Notifications (libnotify)"
-        self.author = "MHub"
-        self.cfg = cfg
-        self.producer = producer
-        self.logger = logger
-        self.tasks = list()
-        
+    name = "notify"
+    description = "Notifications (libnotify)"
+    author = "MHub"
+            
 
     def on_message(self, data, message):
 

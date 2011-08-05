@@ -6,17 +6,10 @@ class Plugin(object):
 
     """ Twitter Poster Plugin """
 
-    def __init__(self, cfg, producer, logger):
-
-        """ Constructor """
-
-        self.name = "twitter"
-        self.description = "Twitter integration"
-        self.author = "MHub"
-        self.cfg = cfg
-        self.producer = producer
-        self.logger = logger
-
+    name = "twitter"
+    description = "Twitter integration"
+    author = "MHub"
+    
         
     def on_init(self):
 

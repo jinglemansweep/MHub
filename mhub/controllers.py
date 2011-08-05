@@ -3,20 +3,19 @@ import datetime
 import imp
 import os
 import random
-import socket
 import time
 import yaml
 
+from socket import timeout
 from kombu.connection import BrokerConnection
 from kombu.messaging import Exchange, Queue, Producer, Consumer
 from twisted.internet import task
 from twisted.internet import reactor
 from pprint import pprint
 
+from configurator import configure
 from logsetup import DefaultLogger
 from meta import PluginHelper
-from utils import configurator
-
 
 
 class MainController(object):
@@ -34,20 +33,13 @@ class MainController(object):
 
         self.options = options
         self.args = args
-        self.cfg = self.load_configuration()
+        self.cfg = configure()
         self.plugins = dict()
         self.logger = DefaultLogger(name="mhub", verbosity=options.verbosity).get_logger()
         self.initialised = False
 
         self.setup_messaging()
         if server: self.setup_plugins()
-
-
-    def load_configuration(self):
-        
-        """ Loads (or initialises and returns) configuration """
-
-        return configurator()
 
             
     def setup_messaging(self):
@@ -90,15 +82,65 @@ class MainController(object):
 
         """ Setup configured plugins """
 
-        plugins_cfg = self.cfg.get("plugins")
+        base_plugins_dir = os.path.join(os.path.dirname(__file__), "plugins")
+        user_plugins_dir = os.path.expanduser(self.cfg.get("general").get("plugin_dir"))
+        config_dir = self.cfg.get("general").get("config_dir")
+        cache_dir = self.cfg.get("general").get("cache_dir")
+        plugin_config_dir = os.path.join(config_dir, "plugins")
+        plugin_cache_dir = os.path.join(cache_dir, "plugins")
 
-        base_plugins_path = os.path.join(os.path.dirname(__file__), "plugins")
-        user_plugins_path = os.path.expanduser(self.cfg.get("general").get("plugins_path"))
-        cache_path = self.cfg.get("general").get("cache_path")
-        plugin_cache_path = os.path.join(cache_path, "plugins")
+        plugin_list = []
+        plugin_list.extend([os.path.join(base_plugins_dir, p) for p in os.listdir(base_plugins_dir) if p.endswith(".py")])
+        plugin_list.extend([os.path.join(user_plugins_dir, p) for p in os.listdir(user_plugins_dir) if p.endswith(".py")])
+
+        for plugin_path in plugin_list:
+
+            basename = os.path.basename(plugin_path)
+            name = basename[:-3]
+
+            try:
+                plugin_src = imp.load_source("Plugin", plugin_path)
+                orig_cls = plugin_src.Plugin
+                plugin_cls = type("Plugin", (orig_cls, PluginHelper), {})
+                plugin_inst = plugin_cls()
+            except ImportError, e:
+                self.logger.error("Plugin '%s' cannot be imported" % (name))
+
+            p_config_dir = os.path.join(plugin_config_dir, name)
+            p_cache_dir = os.path.join(plugin_cache_dir, name)
+            p_config_file = os.path.join(p_config_dir, "plugin.yml")
+
+            if not os.path.exists(p_config_dir):
+                os.makedirs(p_config_dir)
+
+            if not os.path.exists(p_cache_dir):
+                os.makedirs(p_cache_dir)
+                            
+            if os.path.exists(p_config_file):
+                stream = file(p_config_file, "r")
+                p_cfg = yaml.load(stream)
+                if "enabled" not in p_cfg: 
+                    p_cfg["enabled"] = False
+            else:
+                if hasattr(plugin_inst, "configuration"):
+                    p_cfg = plugin_inst.configuration()
+                else:
+                    p_cfg = dict()
+                p_cfg["enabled"] = False
+                
+                stream = file(p_config_file, "w")
+                yaml.dump(p_cfg, stream)
+                
+            plugin_inst.producer = self.mq_producer
+            plugin_inst.logger = self.logger
+            plugin_inst.cfg = p_cfg
+
+            if p_cfg.get("enabled"):
+                self.plugins[name] = plugin_inst
 
 
-        for name, cfg in plugins_cfg.iteritems():
+            """
+
             if cfg.get("enabled"):
                 self.logger.info("Plugin '%s' registered" % (name))
                 self.logger.debug("Cfg: %s" % (cfg))
@@ -122,13 +164,16 @@ class MainController(object):
                 self.logger.debug("Plugin '%s' disabled" % (name))
 
 
+            """
+
+
     def poll_message(self):
 
         """ Poll AMQP messages """
 
         try:
             self.mq_connection.drain_events(timeout=0.1)
-        except socket.timeout:
+        except timeout:
             pass
 
 

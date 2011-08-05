@@ -8,22 +8,16 @@ class Plugin(object):
 
     """ ByeByeStandby online controller plugin """
 
-    def __init__(self, cfg, producer, logger):
-
-        """ Constructor """
-
-        self.name = "byebyestandby"
-        self.description = "ByeByeStandby home automation integration"
-        self.author = "MHub"
-        self.cfg = cfg
-        self.producer = producer
-        self.logger = logger
-        self.tasks = list()
-
+    name = "byebyestandby"
+    description = "ByeByeStandby home automation integration"
+    author = "MHub"
+    
 
     def on_init(self):
 
         """ Main plugin initialisation """
+
+        print socket
 
         self.socket = socket(AF_INET, SOCK_DGRAM)
         

@@ -9,18 +9,10 @@ class Plugin(object):
 
     """ WebSocket Plugin """
 
-    def __init__(self, cfg, producer, logger):
-
-        """ Constructor """
-
-        self.name = "websocket"
-        self.description = "HTML5 WebSocket integration"
-        self.author = "MHub"
-        self.cfg = cfg
-        self.producer = producer
-        self.logger = logger
-        
-
+    name = "websocket"
+    description = "HTML5 WebSocket integration"
+    author = "MHub"
+    
     def on_init(self):
 
         """ Main plugin initialisation """

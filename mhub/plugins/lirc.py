@@ -5,18 +5,10 @@ class Plugin(object):
 
     """ Schedule Plugin """
 
-    def __init__(self, cfg, producer, logger):
-
-        """ Constructor """
-
-        self.name = "lirc"
-        self.description = "Linux infrared remote control daemon integration"
-        self.author = "MHub"
-        self.cfg = cfg
-        self.producer = producer
-        self.logger = logger
-        
-
+    name = "lirc"
+    description = "Linux infrared remote control daemon integration"
+    author = "MHub"
+    
     def on_init(self):
 
         """ Main plugin initialisation """

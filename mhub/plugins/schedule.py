@@ -6,18 +6,10 @@ class Plugin(object):
 
     """ Schedule Plugin """
 
-    def __init__(self, cfg, producer, logger):
-
-        """ Constructor """
-
-        self.name = "schedule"
-        self.description = "Date and time based scheduling"
-        self.author = "MHub"
-        self.cfg = cfg
-        self.producer = producer
-        self.logger = logger
-        
-
+    name = "schedule"
+    description = "Date and time based scheduling"
+    author = "MHub"
+    
     def on_init(self):
 
         """ Main plugin initialisation """

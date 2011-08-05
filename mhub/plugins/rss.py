@@ -5,18 +5,10 @@ class Plugin(object):
 
     """ RSS Feed Plugin """
 
-    def __init__(self, cfg, producer, logger):
-
-        """ Constructor """
-
-        self.name = "rss"
-        self.description = "RSS feed integration"
-        self.author = "MHub"
-        self.cfg = cfg
-        self.producer = producer
-        self.logger = logger
-        
-
+    name = "rss"
+    description = "RSS feed integration"
+    author = "MHub"
+    
     def on_init(self):
 
         """ Main plugin initialisation """

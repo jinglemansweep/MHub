@@ -6,17 +6,9 @@ class Plugin(object):
 
     """ XMPP plugin """
 
-    def __init__(self, cfg, producer, logger):
-
-        """ Constructor """
-
-        self.name = "xmpp"
-        self.description = "XMPP/Jabber plugin"
-        self.author = "MHub"
-        self.cfg = cfg
-        self.producer = producer
-        self.logger = logger
-        self.tasks = list()
+    name = "xmpp"
+    description = "XMPP/Jabber plugin"
+    author = "MHub"
         
 
     def on_message(self, data, message):
@@ -39,8 +31,6 @@ class Plugin(object):
     def on_init(self):
 
         """ On Init """
-
-        self.test()
 
         self.tasks = [(0.5, self.process_messages)]
         self.jid = xmpp.JID(self.cfg.get("xmpp_host"))
