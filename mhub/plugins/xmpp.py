@@ -46,7 +46,10 @@ class Plugin(object):
 
         """ On Init """
 
-        self.tasks = [(0.5, self.process_messages)]
+        self.tasks = [
+            (0.5, self.process_messages),
+            (5, self.update_presence)
+        ]        
         self.jid = xmpp.JID(self.cfg.get("host"))
         self.user = self.jid.getNode()
         self.server = self.jid.getDomain()
@@ -79,10 +82,28 @@ class Plugin(object):
         self.process_xmpp_stream(self.client)
 
 
+    def update_presence(self):
+    
+        """ Update presence status """
+
+        log.msg("Resending Presence")
+
+        if not self.client.isConnected():
+            self.client.reconnectAndReauth()
+            self.client.sendInitPresence()
+
+
     def process_xmpp_stream(self, client):
 
         """ Process XMPP stream for messages and presence changes """
 
+
+        try:
+            client.Process(1)
+        except Exception, e:
+            print e
+        
+        """
         try:
             client.Process(1)
             if not client.isConnected():
@@ -90,6 +111,7 @@ class Plugin(object):
         except KeyboardInterrupt: 
             return False
         return True
+        """
 
 
     def xmpp_disconnect_callback(self):
@@ -164,7 +186,8 @@ class Plugin(object):
 
         if pres_type == "subscribe":
             
-            print "Presence subscription from '%s'" % (sender)
+            log.msg("Presence subscription from '%s'" % (sender))
             client.send(xmpp.Presence(to=sender, typ="subscribed"))
             client.send(xmpp.Presence(to=sender, typ="subscribe"))
+
 
