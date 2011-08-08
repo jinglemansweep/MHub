@@ -1,10 +1,13 @@
 import datetime
 import feedparser
 
+from twisted.python import log
+
 
 class Plugin(object):
 
     """ RSS Feed Plugin """
+
 
     name = "rss"
     description = "RSS feed integration"

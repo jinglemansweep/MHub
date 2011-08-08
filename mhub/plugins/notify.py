@@ -1,9 +1,13 @@
 import datetime
 import fnmatch
 
+from twisted.python import log
+
+
 class Plugin(object):
 
     """ Notify Plugin """
+
 
     name = "notify"
     description = "Notifications (libnotify)"

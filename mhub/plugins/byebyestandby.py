@@ -2,11 +2,13 @@ import datetime
 import time
 
 from socket import socket, AF_INET, SOCK_DGRAM
+from twisted.python import log
 
 
 class Plugin(object):
 
     """ ByeByeStandby online controller plugin """
+
 
     name = "byebyestandby"
     description = "ByeByeStandby home automation integration"
@@ -43,14 +45,14 @@ class Plugin(object):
             device = device.upper()
             state_desc = "ON" if state else "OFF"
             if device is not None and state is not None:
-                self.logger.info("ByeByeStandby Trigger: %s %s" % (device, state_desc))
+                log.msg("ByeByeStandby Trigger: %s %s" % (device, state_desc))
                 self.switch(device, state)
 
         if action == "%s.scene" % (self.name):
             scenes = self.cfg.get("scenes", dict())
             name = params.get("name")
             if name in scenes:
-                self.logger.debug("Scene '%s' running" % (name))
+                log.msg("Scene '%s' running" % (name))
                 scene = scenes.get(name)
                 for action in scene:
                     device, state = action.get("device"), action.get("state")
@@ -68,4 +70,4 @@ class Plugin(object):
             self.socket.sendto(cmd, (self.cfg.get("host"), self.cfg.get("port")))
             time.sleep(1)
         except:
-            self.logger.warn("ByeByeStandby connection probelm")
+            log.msg("ByeByeStandby connection probelm")

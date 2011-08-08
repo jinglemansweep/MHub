@@ -1,10 +1,13 @@
 import pprint
 import xmpp
 
+from twisted.python import log
+
 
 class Plugin(object):
 
     """ XMPP plugin """
+
 
     name = "xmpp"
     description = "XMPP/Jabber plugin"
@@ -93,7 +96,7 @@ class Plugin(object):
 
         """ XMPP disconnection handler callback """
 
-        self.logger.warn("XMPP reconnecting")
+        log.msg("XMPP reconnecting")
 
         self.client.reconnectAndReauth()
 
@@ -111,7 +114,7 @@ class Plugin(object):
         accepted = any([i in sender_address for i in self.cfg.get("whitelist", list())])
         accepted_str = "accepted" if accepted else "rejected"
 
-        self.logger.debug("XMPP message received from '%s' and was %s" % (sender_address, accepted_str))
+        log.msg("XMPP message received from '%s' and was %s" % (sender_address, accepted_str))
 
         if not accepted: return
 
@@ -144,7 +147,7 @@ class Plugin(object):
 
         if pres_type is None: pres_type = "online"
 
-        self.logger.debug("XMPP presence received from '%s'" % sender)
+        log.msg("XMPP presence received from '%s'" % sender)
 
         self.producer.publish({
             "action": "%s.presence" % (self.name),

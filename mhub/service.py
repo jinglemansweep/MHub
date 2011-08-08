@@ -4,57 +4,75 @@ import imp
 import os
 import random
 import time
+import warnings
 import yaml
 
-from socket import timeout
+
 from kombu.connection import BrokerConnection
 from kombu.messaging import Exchange, Queue, Producer, Consumer
-from twisted.internet import task
-from twisted.internet import reactor
 from pprint import pprint
+from socket import timeout
+from twisted.application import service, internet
+from twisted.internet import task, reactor, endpoints, protocol
+from twisted.python import log
+from twisted.python import usage
 
 from configurator import configure
-from logsetup import DefaultLogger
 from meta import PluginHelper
 
 
-class MainController(object):
+class CoreService(service.Service):
 
+    """
+    Core Twisted Service Controller
+    """
 
-    """ Main loop and messaging controller """
 
     mq = None
     initialised = None
 
 
-    def __init__(self, options, args, server=False):
+    # === SERVICE INITIALISATION ===
+
+
+    def __init__(self, reactor, options):
 
         """ Constructor """
 
+        self.reactor = reactor
         self.options = options
-        self.args = args
         self.cfg = configure()
         self.plugins = dict()
-        self.logger = DefaultLogger(name="mhub", verbosity=options.verbosity).get_logger()
         self.initialised = False
 
-        self.logger.info("Welcome to MHub")
-
-        self.setup_messaging()
-        if server: self.setup_plugins()
+        log.msg("Welcome to MHub")
 
             
+    def setup_service(self):
+
+        """ Setup main service """
+
+        warnings.filterwarnings("ignore")
+
+        self.setup_messaging()
+        
+        if self.options.get("server", False):
+            self.setup_plugins()
+            self.init_plugins()
+        self.setup_reactor()
+
+
     def setup_messaging(self):
 
         """ Setup AMQP connection and message consumer """
 
-        self.logger.info("Configuring AMQP messaging")
+        log.msg("Configuring AMQP messaging")
 
         general_cfg = self.cfg.get("general")
         amqp_cfg = self.cfg.get("amqp")
 
-        amqp_host = self.options.host if self.options.host is not None else amqp_cfg.get("host")
-        amqp_port = self.options.port if self.options.port is not None else amqp_cfg.get("port")
+        amqp_host = self.options.get("host", amqp_cfg.get("host"))
+        amqp_port = self.options.get("port", amqp_cfg.get("port"))
 
         self.mq_exchange = Exchange(name="mhub",
                                     type="fanout",
@@ -63,10 +81,11 @@ class MainController(object):
         node_name = general_cfg.get("name")        
         queue_name = "queue-%s" % (node_name)
 
-        self.logger.debug("Queue: %s" % (queue_name))
+        log.msg("Queue: %s" % (queue_name))
 
         self.mq_queue = Queue(queue_name,
-                              exchange=self.mq_exchange)
+                              exchange=self.mq_exchange,
+                              durable=False)
 
         self.mq_connection = BrokerConnection(hostname=amqp_host,
                                               port=amqp_port,
@@ -92,7 +111,7 @@ class MainController(object):
 
         """ Setup configured plugins """
 
-        self.logger.info("Configuring plugins")
+        log.msg("Configuring plugins")
 
         base_plugins_dir = os.path.join(os.path.dirname(__file__), "plugins")
         user_plugins_dir = os.path.expanduser(self.cfg.get("general").get("plugin_dir"))
@@ -122,7 +141,7 @@ class MainController(object):
                 plugin_cls = type("Plugin", (orig_cls, PluginHelper), {})
                 plugin_inst = plugin_cls()
             except ImportError, e:
-                self.logger.error("Plugin '%s' cannot be imported" % (name))
+                log.err("Plugin '%s' cannot be imported" % (name))
                 continue
 
             p_config_dir = os.path.join(plugin_config_dir, name)
@@ -134,15 +153,15 @@ class MainController(object):
 
             if not os.path.exists(p_cache_dir):
                 os.makedirs(p_cache_dir)
-                            
+
             if os.path.exists(p_config_file):
-                self.logger.debug("Loading configuration for plugin '%s'" % (name))
+                log.msg("Loading configuration for plugin '%s'" % (name))
                 stream = file(p_config_file, "r")
                 p_cfg = yaml.load(stream)
                 if "enabled" not in p_cfg: 
                     p_cfg["enabled"] = False
             else:
-                self.logger.debug("Creating default configuration for plugin '%s'" % (name))
+                log.msg("Creating default configuration for plugin '%s'" % (name))
                 if hasattr(plugin_cls, "default_config"):
                     p_cfg = plugin_cls.default_config
                 else:
@@ -152,15 +171,58 @@ class MainController(object):
                 yaml.dump(p_cfg, stream)
                 
             plugin_inst.producer = self.mq_producer
-            plugin_inst.logger = self.logger
             plugin_inst.cfg = p_cfg
 
             if p_cfg.get("enabled"):
-                self.logger.info("Registering plugin '%s'" % (name))
+                log.msg("Registering plugin '%s'" % (name))
                 self.plugins[name] = plugin_inst
 
 
-    def poll_message(self):
+    def init_plugins(self):
+
+        """ Plugin initialisation helper """
+
+        if not self.initialised:
+            for name, plugin in self.plugins.iteritems():
+                log.msg("Initialising plugin '%s'" % (name))
+                if hasattr(plugin, "on_init"):
+                    plugin.on_init()
+            self.initialised = True
+
+
+
+    def setup_reactor(self):
+
+        """ Setup Twisted reactor events and callbacks """
+
+        log.msg("Configuring reactor events and callbacks")
+
+        #self.on_init()
+
+        cfg_general = self.cfg.get("general", dict())
+        mq_poll_interval = float(cfg_general.get("poll_interval", 0.1))
+
+        mq_task = task.LoopingCall(self.amqp_poll_message)
+        mq_task.start(mq_poll_interval)
+
+        for plugin_name, plugin_inst in self.plugins.iteritems():
+            if not hasattr(plugin_inst, "tasks"): continue
+            plugin_tasks = plugin_inst.tasks
+            for plugin_task in plugin_tasks:
+                interval = plugin_task[0]
+                func = plugin_task[1]
+                log.msg("Registered '%s' from '%s' every %.2f seconds" % (func.__name__,
+                                                                          plugin_name,
+                                                                          interval))
+                task_obj = task.LoopingCall(func)
+                task_obj.start(interval)
+            log.msg("%i tasks declared" % (len(plugin_tasks)))
+
+
+    # === AMQP MESSAGE HANDLING ===
+
+
+    def amqp_poll_message(self):
 
         """ Poll AMQP messages """
 
@@ -170,11 +232,14 @@ class MainController(object):
             pass
 
 
-    def send_message(self, message):
+    def amqp_send_message(self, message):
 
         """ Send an AMQP message via configured AMQP connection """
 
         self.mq_producer.publish(message)
+
+
+    # === MHUB EVENTS ===
 
 
     def on_message(self, data, message):
@@ -188,42 +253,17 @@ class MainController(object):
         message.ack()
 
 
-    def on_init(self):
+    # === TWISTED SERVICE HANDLING ===
 
-        """ On startup forwarding function """
 
-        if not self.initialised:
-            for name, plugin in self.plugins.iteritems():
-                self.logger.debug("Initialising plugin '%s'" % (name))
-                if hasattr(plugin, "on_init"):
-                    plugin.on_init()
-            self.initialised = True
-            
+    def startService(self):
 
-    def start(self):
+        """ Starts the reactor service """
 
-        """ Start the main controller loop """
+        self.setup_service()
 
-        self.logger.info("Controller started")
+  
 
-        self.on_init()
+        
 
-        cfg_general = self.cfg.get("general", dict())
-        mq_poll_interval = float(cfg_general.get("poll_interval", 0.1))
 
-        mq_task = task.LoopingCall(self.poll_message)
-        mq_task.start(mq_poll_interval)
-
-        for plugin_name, plugin_inst in self.plugins.iteritems():
-            if not hasattr(plugin_inst, "tasks"): continue
-            plugin_tasks = plugin_inst.tasks
-            for plugin_task in plugin_tasks:
-                interval = plugin_task[0]
-                func = plugin_task[1]
-                self.logger.debug("Registered '%s' from '%s' every %.2f seconds" % (func.__name__,
-                                                                                  plugin_name,
-                                                                                  interval))
-                task_obj = task.LoopingCall(func)
-                task_obj.start(interval)
-
-        reactor.run()

@@ -1,6 +1,8 @@
 import subprocess
 import urllib
 
+from twisted.python import log
+
 
 class Plugin(object):
 

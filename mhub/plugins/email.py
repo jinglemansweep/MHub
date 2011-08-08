@@ -6,6 +6,8 @@ from email.MIMEBase import MIMEBase
 from email.MIMEText import MIMEText
 from email import Encoders
 
+from twisted.python import log
+
 
 class Plugin(object):
 
@@ -29,6 +31,9 @@ class Plugin(object):
 
         """ On initialisation handler """
 
+        pass
+
+
     def on_message(self, data, message):
 
         """ AMQP on-message handler """
@@ -42,7 +47,7 @@ class Plugin(object):
             body = params.get("body", "No Body")
 
             if recipients is not None:
-                self.logger.info("Sending Email")
+                log.msg("Sending Email")
                 self.send_email(recipients, subject, body)
 
 
@@ -50,8 +55,8 @@ class Plugin(object):
 
         """ Send email helper """
 
-        self.logger.debug("To: %s" % (", ".join(recipients)))
-        self.logger.debug("Subject: %s" % (subject))
+        log.msg("To: %s" % (", ".join(recipients)))
+        log.msg("Subject: %s" % (subject))
 
         msg = MIMEMultipart()
 

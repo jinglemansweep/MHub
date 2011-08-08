@@ -1,5 +1,7 @@
 import socket
 
+from twisted.python import log
+
 
 class Plugin(object):
 

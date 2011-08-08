@@ -1,10 +1,13 @@
 import datetime
 import twitter
 
+from twisted.python import log
+
 
 class Plugin(object):
 
     """ Twitter Poster Plugin """
+
 
     name = "twitter"
     description = "Twitter integration"
@@ -54,7 +57,7 @@ class Plugin(object):
                         })
                         self.last_poll[user] = ts + 1
             except twitter.TwitterError as e:
-                self.logger.warn("Twitter API error: %s" % (e))
+                log.msg("Twitter API error: %s" % (e))
         self.first_run = False
         
 
@@ -68,17 +71,17 @@ class Plugin(object):
 
             body = params.get("body", "No Body")
 
-            self.logger.info("Sending Tweet")
+            log.msg("Sending Tweet")
             self.send_tweet(body)
 
 
     def send_tweet(self, body):
 
-        self.logger.debug("Body: %s" % (body))
+        log.msg("Body: %s" % (body))
 
         try:
             status = self.api.PostUpdate(body)
         except UnicodeDecodeError:
             pass
         except twitter.TwitterError as e:
-            self.logger.warn("Twitter API error: %s" % (e))
+            log.err("Twitter API error: %s" % (e))

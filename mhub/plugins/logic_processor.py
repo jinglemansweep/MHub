@@ -1,9 +1,13 @@
 import datetime
 import os
 
+from twisted.python import log
+
+
 class Plugin(object):
 
     """ Logic Processor Plugin """
+
 
     name = "logic_processor"
     description = "Simple user script logic processor"
@@ -41,9 +45,6 @@ class Plugin(object):
         for script in self.scripts.get("on_tick", list()):
             exec(script, ctx)
 
-        #self.logger.debug("State:")
-        #self.logger.debug(self.state)
-        
 
     def on_message(self, data, message):
 
@@ -68,7 +69,7 @@ class Plugin(object):
         ctx = {
             "state": self.state,
             "env": self.env,
-            "logger": self.logger,
+            "log": log,
             "send_message": self.producer.publish
         }
         
@@ -122,4 +123,4 @@ class Plugin(object):
                         self.scripts[trigger] = list()
                     self.scripts[trigger].append(contents)
                 else:
-                    self.logger.debug("Script not found")
+                    log.msg("Script not found")

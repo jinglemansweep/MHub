@@ -1,10 +1,13 @@
 import datetime
 import random
 
+from twisted.python import log
+
 
 class Plugin(object):
 
     """ Schedule Plugin """
+
 
     name = "schedule"
     description = "Date and time based scheduling"
@@ -20,7 +23,6 @@ class Plugin(object):
                 "fuzziness": 10
             }
         }
-
     }
 
     
@@ -112,11 +114,11 @@ class Plugin(object):
                     "second": seconds
                 }
 
-                self.logger.debug("Schedule '%s': %02d:%02d:%02d" % (name, hours, minutes, seconds))
+                log.msg("Schedule '%s': %02d:%02d:%02d" % (name, hours, minutes, seconds))
 
                 schedule["actual"] = actuals
-
                 schedule["fired"] = False
+
                 
             if dt.get("new_second"):
 
