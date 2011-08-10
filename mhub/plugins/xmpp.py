@@ -72,7 +72,8 @@ class Plugin(object):
             self.online = False
         
         if self.online:
-            log.msg("XMPP already connected")
+            # log.msg("XMPP already connected")
+            pass
         else:
             try:
                 self.client = xmpp.Client(self.server, debug=list())

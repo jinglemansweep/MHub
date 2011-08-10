@@ -14,13 +14,13 @@ class Plugin(object):
 
     def on_init(self):
 
-        self.tasks = [(1.0, self.on_second)]
+        self.tasks = [(60.0, self.on_second)]
 
 
     def on_second(self):
 
         """ On every second  handler """
 
-        log.msg("Second has elapsed")
+        log.msg("Heartbeat (60 secs)")
 
 
