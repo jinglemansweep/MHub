@@ -1,6 +1,7 @@
 import pprint
 import xmpp
 
+from socket import socket, AF_INET, SOCK_DGRAM
 from twisted.python import log
 
 
@@ -48,70 +49,74 @@ class Plugin(object):
 
         self.tasks = [
             (0.5, self.process_messages),
-            (5, self.update_presence)
+            (5, self.connect)
         ]        
         self.jid = xmpp.JID(self.cfg.get("host"))
         self.user = self.jid.getNode()
         self.server = self.jid.getDomain()
-        self.client = xmpp.Client(self.server, debug=list())
+        self.online = False
         
-        if not self.client.connect(server=(self.cfg.get("server"),
-                                           self.cfg.get("port", 5222))):
-            raise IOError("Cannot connect to server")
+        self.connect()
 
-        if not self.client.auth(self.cfg.get("username"), 
-                                self.cfg.get("password"),
-                                self.cfg.get("resource", "mhub")):
-            raise IOError("Cannot authorise with server")
-
-        self.client.RegisterDisconnectHandler(self.xmpp_disconnect_callback)
-
-        self.client.RegisterHandler("message", 
-                                    self.xmpp_message_callback)
-
-        self.client.RegisterHandler("presence",
-                                    self.xmpp_presence_callback)
-
-        self.client.sendInitPresence()
         
+
+    def connect(self):
+
+        """ Connect and keep alive """
+
+        try:
+            test_socket = socket(AF_INET, SOCK_DGRAM)
+            test_socket.sendto("", (self.cfg.get("server"), self.cfg.get("port")))
+        except:
+            log.err("Network problem")
+            self.online = False
+        
+        if self.online:
+            log.msg("XMPP already connected")
+        else:
+            try:
+                self.client = xmpp.Client(self.server, debug=list())
+                self.client.connect(server=(self.cfg.get("server"),
+                                            self.cfg.get("port", 5222)))
+                self.client.auth(self.cfg.get("username"), 
+                                 self.cfg.get("password"),
+                                 self.cfg.get("resource", "mhub"))
+                self.client.RegisterDisconnectHandler(self.xmpp_disconnect_callback)
+                self.client.RegisterHandler("message", 
+                                            self.xmpp_message_callback)
+                self.client.RegisterHandler("presence",
+                                            self.xmpp_presence_callback)
+                self.client.sendInitPresence()
+                self.online = True
+                log.msg("Connected to XMPP")
+            except Exception, e:
+                log.err("Cannot connect to XMPP")
+                self.online = False
+
 
     def process_messages(self):
 
         """ Process incoming XMPP messages """
 
-        self.process_xmpp_stream(self.client)
-
-
-    def update_presence(self):
-    
-        """ Update presence status """
-
-        log.msg("Resending Presence")
-
-        if not self.client.isConnected():
-            self.client.reconnectAndReauth()
-            self.client.sendInitPresence()
+        if self.online:
+            self.process_xmpp_stream(self.client)
 
 
     def process_xmpp_stream(self, client):
 
         """ Process XMPP stream for messages and presence changes """
 
-
-        try:
-            client.Process(1)
-        except Exception, e:
-            print e
-        
-        """
-        try:
-            client.Process(1)
-            if not client.isConnected():
-                client.reconnectAndReauth()
-        except KeyboardInterrupt: 
-            return False
-        return True
-        """
+        if self.online:
+            try:
+                client.Process(1)
+            except xmpp.protocol.SystemShutdown, e:
+                log.err("XMPP server disconnected")
+                self.online = False
+            except KeyboardInterrupt:
+                return False
+            except:
+                log.msg(sys.exc_info()[0])
+            return True
 
 
     def xmpp_disconnect_callback(self):

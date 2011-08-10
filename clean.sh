@@ -8,6 +8,7 @@ find . -name "*.pyc" -exec rm '{}' ';'
 
 echo "Removing log files..."
 rm -f twistd.log
+rm -f twistd.pid
 
 echo "Building project..."
 python setup.py install

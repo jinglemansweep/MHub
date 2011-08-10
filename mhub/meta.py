@@ -1,6 +1,3 @@
-
-
-
 class PluginHelper(object):
 
     """ Plugin metaclass helper class """

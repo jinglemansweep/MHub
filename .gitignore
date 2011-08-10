@@ -6,3 +6,5 @@ dist
 #*#
 *~
 twistd.log
+twistd.pid
+dropin.cache
