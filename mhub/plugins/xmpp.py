@@ -49,7 +49,7 @@ class Plugin(object):
 
         self.tasks = [
             (0.5, self.process_messages),
-            (5, self.connect)
+            (10, self.connect)
         ]        
         self.jid = xmpp.JID(self.cfg.get("host"))
         self.user = self.jid.getNode()
@@ -72,8 +72,7 @@ class Plugin(object):
             self.online = False
         
         if self.online:
-            # log.msg("XMPP already connected")
-            pass
+            self.client.send(" ")
         else:
             try:
                 self.client = xmpp.Client(self.server, debug=list())

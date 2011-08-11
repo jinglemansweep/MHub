@@ -56,8 +56,9 @@ class Plugin(object):
                             "params": {"user": user, "body": status.text}
                         })
                         self.last_poll[user] = ts + 1
-            except twitter.TwitterError as e:
-                log.msg("Twitter API error: %s" % (e))
+            except Exception as e:
+                log.err("Error: %s" % (e))
+
         self.first_run = False
         
 
