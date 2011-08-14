@@ -123,4 +123,4 @@ class Plugin(object):
                         self.scripts[trigger] = list()
                     self.scripts[trigger].append(contents)
                 else:
-                    log.msg("Script not found")
+                    self.logger.debug("Script not found")

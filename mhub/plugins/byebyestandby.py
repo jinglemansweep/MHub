@@ -45,14 +45,14 @@ class Plugin(object):
             device = device.upper()
             state_desc = "ON" if state else "OFF"
             if device is not None and state is not None:
-                log.msg("ByeByeStandby Trigger: %s %s" % (device, state_desc))
+                self.logger.info("ByeByeStandby Trigger: %s %s" % (device, state_desc))
                 self.switch(device, state)
 
         if action == "%s.scene" % (self.name):
             scenes = self.cfg.get("scenes", dict())
             name = params.get("name")
             if name in scenes:
-                log.msg("Scene '%s' running" % (name))
+                self.logger.info("Scene '%s' running" % (name))
                 scene = scenes.get(name)
                 for action in scene:
                     device, state = action.get("device"), action.get("state")
@@ -70,4 +70,4 @@ class Plugin(object):
             self.socket.sendto(cmd, (self.cfg.get("host"), self.cfg.get("port")))
             time.sleep(1)
         except:
-            log.msg("ByeByeStandby connection probelm")
+            self.logger.debug("ByeByeStandby connection problem")

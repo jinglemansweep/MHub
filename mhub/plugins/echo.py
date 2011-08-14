@@ -21,6 +21,6 @@ class Plugin(object):
 
         """ On AMQP message handler """
 
-        log.msg("Echo: %s" % (message.body))
+        self.logger.info("Echo: %s" % (message.body))
 
 

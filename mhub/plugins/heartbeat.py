@@ -21,6 +21,6 @@ class Plugin(object):
 
         """ On every second  handler """
 
-        log.msg("Heartbeat (60 secs)")
+        self.logger.info("Heartbeat (60 secs)")
 
 

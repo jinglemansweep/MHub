@@ -57,7 +57,7 @@ class Plugin(object):
                         })
                         self.last_poll[user] = ts + 1
             except Exception as e:
-                log.err("Error: %s" % (e))
+                self.logger.debug("Error: %s" % (e))
 
         self.first_run = False
         
@@ -72,17 +72,17 @@ class Plugin(object):
 
             body = params.get("body", "No Body")
 
-            log.msg("Sending Tweet")
+            self.logger.info("Sending Tweet")
             self.send_tweet(body)
 
 
     def send_tweet(self, body):
 
-        log.msg("Body: %s" % (body))
+        self.logger.debug("Body: %s" % (body))
 
         try:
             status = self.api.PostUpdate(body)
         except UnicodeDecodeError:
             pass
         except twitter.TwitterError as e:
-            log.err("Twitter API error: %s" % (e))
+            self.logger.debug("Twitter API error: %s" % (e))

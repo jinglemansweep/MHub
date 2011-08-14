@@ -68,7 +68,7 @@ class Plugin(object):
             test_socket = socket(AF_INET, SOCK_DGRAM)
             test_socket.sendto("", (self.cfg.get("server"), self.cfg.get("port")))
         except:
-            log.err("Network problem")
+            self.logger.debug("Network problem")
             self.online = False
         
         if self.online:
@@ -88,9 +88,9 @@ class Plugin(object):
                                             self.xmpp_presence_callback)
                 self.client.sendInitPresence()
                 self.online = True
-                log.msg("Connected to XMPP")
+                self.logger.debug("Connected to XMPP")
             except Exception, e:
-                log.err("Cannot connect to XMPP")
+                self.logger.debug("Cannot connect to XMPP")
                 self.online = False
 
 
@@ -110,7 +110,7 @@ class Plugin(object):
             try:
                 client.Process(1)
             except xmpp.protocol.SystemShutdown, e:
-                log.err("XMPP server disconnected")
+                self.logger.debug("XMPP server disconnected")
                 self.online = False
             except KeyboardInterrupt:
                 return False
@@ -141,7 +141,7 @@ class Plugin(object):
         accepted = any([i in sender_address for i in self.cfg.get("whitelist", list())])
         accepted_str = "accepted" if accepted else "rejected"
 
-        log.msg("XMPP message received from '%s' and was %s" % (sender_address, accepted_str))
+        self.logger.debug("XMPP message received from '%s' and was %s" % (sender_address, accepted_str))
 
         if not accepted: return
 
@@ -174,7 +174,7 @@ class Plugin(object):
 
         if pres_type is None: pres_type = "online"
 
-        log.msg("XMPP presence received from '%s'" % sender)
+        self.logger.debug("XMPP presence received from '%s'" % sender)
 
         self.producer.publish({
             "action": "%s.presence" % (self.name),
@@ -191,7 +191,7 @@ class Plugin(object):
 
         if pres_type == "subscribe":
             
-            log.msg("Presence subscription from '%s'" % (sender))
+            self.logger.debug("Presence subscription from '%s'" % (sender))
             client.send(xmpp.Presence(to=sender, typ="subscribed"))
             client.send(xmpp.Presence(to=sender, typ="subscribe"))
 

@@ -19,7 +19,7 @@ from twisted.python import usage
 
 from configurator import configure
 from meta import PluginHelper
-
+from utils import Logger
 
 class CoreService(service.Service):
 
@@ -43,9 +43,10 @@ class CoreService(service.Service):
         self.options = options
         self.cfg = configure()
         self.plugins = dict()
+        self.logger = Logger(name="service")
         self.initialised = False
 
-        log.msg("Welcome to MHub")
+        self.logger.info("Welcome to MHub")
 
             
     def setup_service(self):
@@ -66,7 +67,7 @@ class CoreService(service.Service):
 
         """ Setup AMQP connection and message consumer """
 
-        log.msg("Configuring AMQP messaging")
+        self.logger.info("Configuring AMQP messaging")
 
         general_cfg = self.cfg.get("general")
         amqp_cfg = self.cfg.get("amqp")
@@ -81,7 +82,7 @@ class CoreService(service.Service):
         node_name = general_cfg.get("name")        
         queue_name = "queue-%s" % (node_name)
 
-        log.msg("Queue: %s" % (queue_name))
+        self.logger.info("Queue: %s" % (queue_name))
 
         self.mq_queue = Queue(queue_name,
                               exchange=self.mq_exchange,
@@ -111,7 +112,7 @@ class CoreService(service.Service):
 
         """ Setup configured plugins """
 
-        log.msg("Configuring plugins")
+        self.logger.info("Configuring plugins")
 
         base_plugins_dir = os.path.join(os.path.dirname(__file__), "plugins")
         user_plugins_dir = os.path.expanduser(self.cfg.get("general").get("plugin_dir"))
@@ -141,7 +142,7 @@ class CoreService(service.Service):
                 plugin_cls = type("Plugin", (orig_cls, PluginHelper), {})
                 plugin_inst = plugin_cls()
             except ImportError, e:
-                log.err("Plugin '%s' cannot be imported" % (name))
+                self.logger.error("Plugin '%s' cannot be imported" % (name))
                 continue
 
             p_config_dir = os.path.join(plugin_config_dir, name)
@@ -155,13 +156,13 @@ class CoreService(service.Service):
                 os.makedirs(p_cache_dir)
 
             if os.path.exists(p_config_file):
-                log.msg("Loading configuration for plugin '%s'" % (name))
+                self.logger.debug("Loading configuration for plugin '%s'" % (name))
                 stream = file(p_config_file, "r")
                 p_cfg = yaml.load(stream)
                 if "enabled" not in p_cfg: 
                     p_cfg["enabled"] = False
             else:
-                log.msg("Creating default configuration for plugin '%s'" % (name))
+                self.logger.debug("Creating default configuration for plugin '%s'" % (name))
                 if hasattr(plugin_cls, "default_config"):
                     p_cfg = plugin_cls.default_config
                 else:
@@ -169,12 +170,13 @@ class CoreService(service.Service):
                 p_cfg["enabled"] = False
                 stream = file(p_config_file, "w")
                 yaml.dump(p_cfg, stream)
-                
+
+            plugin_inst.logger = Logger(name="plugin.%s" % (name))
             plugin_inst.producer = self.mq_producer
             plugin_inst.cfg = p_cfg
 
             if p_cfg.get("enabled"):
-                log.msg("Registering plugin '%s'" % (name))
+                self.logger.info("Registering plugin '%s'" % (name))
                 self.plugins[name] = plugin_inst
 
 
@@ -184,7 +186,7 @@ class CoreService(service.Service):
 
         if not self.initialised:
             for name, plugin in self.plugins.iteritems():
-                log.msg("Initialising plugin '%s'" % (name))
+                self.logger.debug("Initialising plugin '%s'" % (name))
                 if hasattr(plugin, "on_init"):
                     plugin.on_init()
             self.initialised = True
@@ -195,7 +197,7 @@ class CoreService(service.Service):
 
         """ Setup Twisted reactor events and callbacks """
 
-        log.msg("Configuring reactor events and callbacks")
+        self.logger.info("Configuring reactor events and callbacks")
 
         #self.on_init()
 
@@ -211,12 +213,12 @@ class CoreService(service.Service):
             for plugin_task in plugin_tasks:
                 interval = plugin_task[0]
                 func = plugin_task[1]
-                log.msg("Registered '%s' from '%s' every %.2f seconds" % (func.__name__,
+                self.logger.debug("Registered '%s' from '%s' every %.2f seconds" % (func.__name__,
                                                                           plugin_name,
                                                                           interval))
                 task_obj = task.LoopingCall(func)
                 task_obj.start(interval)
-            log.msg("%i tasks declared" % (len(plugin_tasks)))
+            self.logger.info("%i tasks declared" % (len(plugin_tasks)))
 
 
     # === AMQP MESSAGE HANDLING ===

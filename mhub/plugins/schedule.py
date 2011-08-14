@@ -114,7 +114,7 @@ class Plugin(object):
                     "second": seconds
                 }
 
-                log.msg("Schedule '%s': %02d:%02d:%02d" % (name, hours, minutes, seconds))
+                self.logger.info("Schedule '%s': %02d:%02d:%02d" % (name, hours, minutes, seconds))
 
                 schedule["actual"] = actuals
                 schedule["fired"] = False

@@ -47,7 +47,7 @@ class Plugin(object):
             body = params.get("body", "No Body")
 
             if recipients is not None:
-                log.msg("Sending Email")
+                self.logger.info("Sending Email")
                 self.send_email(recipients, subject, body)
 
 
@@ -55,8 +55,8 @@ class Plugin(object):
 
         """ Send email helper """
 
-        log.msg("To: %s" % (", ".join(recipients)))
-        log.msg("Subject: %s" % (subject))
+        self.logger.debug("To: %s" % (", ".join(recipients)))
+        self.logger.debug("Subject: %s" % (subject))
 
         msg = MIMEMultipart()
 
