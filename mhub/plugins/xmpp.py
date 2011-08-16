@@ -1,5 +1,6 @@
 import pprint
 import xmpp
+import sys
 
 from socket import socket, AF_INET, SOCK_DGRAM
 from twisted.python import log
@@ -39,7 +40,9 @@ class Plugin(object):
 
             if recipient is not None and body is not None:
 
-                msg = xmpp.protocol.Message(recipient, body)
+                msg = xmpp.Message(to=recipient, 
+                                   body=body,
+                                   typ="chat")
                 self.client.send(msg)
 
         
@@ -51,9 +54,6 @@ class Plugin(object):
             (0.5, self.process_messages),
             (10, self.connect)
         ]        
-        self.jid = xmpp.JID(self.cfg.get("host"))
-        self.user = self.jid.getNode()
-        self.server = self.jid.getDomain()
         self.online = False
         
         self.connect()
@@ -75,7 +75,12 @@ class Plugin(object):
             self.client.send(" ")
         else:
             try:
-                self.client = xmpp.Client(self.server, debug=list())
+                jid_username = "%s@%s" % (self.cfg.get("username"), self.cfg.get("host"))
+                self.jid = xmpp.JID(jid_username)
+                self.user = self.jid.getNode()
+                self.server = self.jid.getDomain()
+                self.client = xmpp.Client(self.server, 
+                                          debug=list())
                 self.client.connect(server=(self.cfg.get("server"),
                                             self.cfg.get("port", 5222)))
                 self.client.auth(self.cfg.get("username"), 
@@ -132,9 +137,16 @@ class Plugin(object):
 
         """ XMPP message handler callback """
 
+        username = self.cfg.get("username")
+        to = str(msg.getTo().getNode())
         body = msg.getBody()
         sender = msg.getFrom()
         sender_address = "%s@%s" % (sender.getNode(), sender.getDomain())
+        
+        print "username " + username
+        print "to " + to
+        print "sender " + str(sender)
+
 
         if body is None: return
 
@@ -142,6 +154,7 @@ class Plugin(object):
         accepted_str = "accepted" if accepted else "rejected"
 
         self.logger.debug("XMPP message received from '%s' and was %s" % (sender_address, accepted_str))
+        self.logger.debug(body)
 
         if not accepted: return
 

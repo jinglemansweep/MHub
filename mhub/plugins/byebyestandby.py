@@ -45,14 +45,16 @@ class Plugin(object):
             device = device.upper()
             state_desc = "ON" if state else "OFF"
             if device is not None and state is not None:
-                self.logger.info("ByeByeStandby Trigger: %s %s" % (device, state_desc))
+                self.logger.info("ByeByeStandby Trigger: %s %s" % (device, state_desc),
+                                 publish=True)
                 self.switch(device, state)
 
         if action == "%s.scene" % (self.name):
             scenes = self.cfg.get("scenes", dict())
             name = params.get("name")
             if name in scenes:
-                self.logger.info("Scene '%s' running" % (name))
+                self.logger.info("Scene '%s' running" % (name),
+                                 publish=True)
                 scene = scenes.get(name)
                 for action in scene:
                     device, state = action.get("device"), action.get("state")

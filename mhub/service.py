@@ -3,6 +3,7 @@ import datetime
 import imp
 import os
 import random
+import sys
 import time
 import warnings
 import yaml
@@ -144,6 +145,9 @@ class CoreService(service.Service):
             except ImportError, e:
                 self.logger.error("Plugin '%s' cannot be imported" % (name))
                 continue
+            except IOError, e:
+                self.logger.error("Plugin '%s' not found" % (name))
+                continue
 
             p_config_dir = os.path.join(plugin_config_dir, name)
             p_cache_dir = os.path.join(plugin_cache_dir, name)
@@ -171,7 +175,9 @@ class CoreService(service.Service):
                 stream = file(p_config_file, "w")
                 yaml.dump(p_cfg, stream)
 
-            plugin_inst.logger = Logger(name="plugin.%s" % (name))
+            plugin_logger = Logger(name="plugin.%s" % (name),
+                                   producer=self.mq_producer)
+            plugin_inst.logger = plugin_logger
             plugin_inst.producer = self.mq_producer
             plugin_inst.cfg = p_cfg
 
