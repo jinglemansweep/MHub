@@ -17,11 +17,32 @@ from twisted.application import service, internet
 from twisted.internet import task, reactor, endpoints, protocol
 from twisted.python import log
 from twisted.python import usage
-from twisted.web import xmlrpc, server
+from twisted.web import xmlrpc, server, resource, static
 
 from configurator import configure
 from meta import PluginHelper
 from utils import Logger
+
+
+class HTTPService(resource.Resource):
+ 
+    cs = None
+    isLeaf = True
+
+    def getChild(self, name, request):
+        
+        if name == "":
+            return self
+        return resource.Resource.getChild(self, name, request)
+
+
+    def render_GET(self, request):
+
+        msg = dict(action="", params=dict())
+
+        self.cs.amqp_send_message(msg)
+        return "HTTP"
+
 
 class XMLRPCService(xmlrpc.XMLRPC):
 
@@ -220,6 +241,14 @@ class CoreService(service.Service):
         xmlrpc_service = XMLRPCService()
         xmlrpc_service.cs = self
         self.reactor.listenTCP(7080, server.Site(xmlrpc_service))
+
+        http_service = HTTPService()
+        http_service.cs = self
+
+        http_root = static.File("/tmp/") #HTTPService()
+        http_root.putChild("doc", static.File("/etc/fstab"))
+        http_root.putChild("exe", http_service)
+        self.reactor.listenTCP(8080, server.Site(http_root))
 
         cfg_general = self.cfg.get("general", dict())
         mq_poll_interval = float(cfg_general.get("poll_interval", 0.1))
