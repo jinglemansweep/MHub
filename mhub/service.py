@@ -17,10 +17,23 @@ from twisted.application import service, internet
 from twisted.internet import task, reactor, endpoints, protocol
 from twisted.python import log
 from twisted.python import usage
+from twisted.web import xmlrpc, server
 
 from configurator import configure
 from meta import PluginHelper
 from utils import Logger
+
+class XMLRPCService(xmlrpc.XMLRPC):
+
+    cs = None
+
+    def xmlrpc_send_message(self, action, params):
+
+        msg = dict(action=action, params=params)
+
+        self.cs.amqp_send_message(msg)
+        return "DONE"
+
 
 class CoreService(service.Service):
 
@@ -36,7 +49,7 @@ class CoreService(service.Service):
     # === SERVICE INITIALISATION ===
 
 
-    def __init__(self, reactor, options):
+    def __init__(self, reactor=None, options=None):
 
         """ Constructor """
 
@@ -64,7 +77,7 @@ class CoreService(service.Service):
         self.setup_reactor()
 
 
-    def setup_messaging(self):
+    def setup_messaging(self, consumer=True):
 
         """ Setup AMQP connection and message consumer """
 
@@ -80,7 +93,7 @@ class CoreService(service.Service):
                                     type="fanout",
                                     durable=False)
 
-        node_name = general_cfg.get("name")        
+        node_name = self.options.get("name", general_cfg.get("name"))
         queue_name = "queue-%s" % (node_name)
 
         self.logger.info("Queue: %s" % (queue_name))
@@ -100,9 +113,9 @@ class CoreService(service.Service):
         self.mq_consumer = Consumer(self.mq_channel,
                                     self.mq_queue)
 
-        self.mq_consumer.register_callback(self.on_message)
-
-        self.mq_consumer.consume()
+        if consumer:
+            self.mq_consumer.register_callback(self.on_message)
+            self.mq_consumer.consume()
         
         self.mq_producer = Producer(channel=self.mq_channel,
                                     exchange=self.mq_exchange,
@@ -196,8 +209,7 @@ class CoreService(service.Service):
                 if hasattr(plugin, "on_init"):
                     plugin.on_init()
             self.initialised = True
-
-
+            
 
     def setup_reactor(self):
 
@@ -205,7 +217,9 @@ class CoreService(service.Service):
 
         self.logger.info("Configuring reactor events and callbacks")
 
-        #self.on_init()
+        xmlrpc_service = XMLRPCService()
+        xmlrpc_service.cs = self
+        self.reactor.listenTCP(7080, server.Site(xmlrpc_service))
 
         cfg_general = self.cfg.get("general", dict())
         mq_poll_interval = float(cfg_general.get("poll_interval", 0.1))

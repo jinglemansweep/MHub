@@ -30,9 +30,8 @@ class Plugin(object):
 
         """ Main plugin initialisation """
 
-        print socket
-
         self.socket = socket(AF_INET, SOCK_DGRAM)
+
         
     def on_message(self, data, message):
 

@@ -1,7 +1,6 @@
 import sys
 
 from twisted.python import usage
-
 from mhub.service import CoreService
 
 
@@ -32,9 +31,12 @@ class Options(usage.Options):
     ]
 
 
+
 def makeService(options):
 
     from twisted.internet import reactor
+    from twisted.web import server
 
     service = CoreService(reactor, options)
+
     return service
