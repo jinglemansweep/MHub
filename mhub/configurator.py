@@ -28,6 +28,10 @@ def configure():
     if not os.path.exists(scripts_dir):
         os.makedirs(scripts_dir)
 
+    webroot_dir = os.path.join(config_dir, "webroot")
+    if not os.path.exists(webroot_dir):
+        os.makedirs(webroot_dir)
+
     open(os.path.join(scripts_dir, "on_init.py"), "a").close()
     open(os.path.join(scripts_dir, "on_message.py"), "a").close()
     open(os.path.join(scripts_dir, "on_tick.py"), "a").close()
@@ -44,7 +48,8 @@ def configure():
         cfg = generate_default(config_dir,
                                cache_dir,
                                plugins_dir,
-                               scripts_dir)
+                               scripts_dir,
+                               webroot_dir)
 
         stream = file(app_config_filename, "w")
         yaml.dump(cfg, stream)
@@ -57,7 +62,8 @@ def configure():
 def generate_default(config_dir,
                      cache_dir,
                      plugin_dir,
-                     scripts_dir):
+                     scripts_dir,
+                     webroot_dir):
 
     """ Generate default configuration """
 
@@ -74,6 +80,15 @@ def generate_default(config_dir,
             "port": 5672,
             "username": "guest",
             "password": "guest"
+        },
+        "web": {
+            "enabled": True,
+            "port": 8080,
+            "root_dir": webroot_dir
+        },
+        "xmlrpc": {
+            "enabled": True,
+            "port": 8081
         }
     }
 
