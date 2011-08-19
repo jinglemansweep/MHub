@@ -42,7 +42,7 @@ class Plugin(object):
 
         """ Gets tweets from configured timelines """
 
-        timelines = self.cfg.get("timelines")
+        timelines = self.cfg.get("timelines", list())
 
         for user in timelines:
             self.last_poll[user] = 0

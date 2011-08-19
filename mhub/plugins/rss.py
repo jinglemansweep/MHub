@@ -37,7 +37,7 @@ class Plugin(object):
 
         """ RSS feed parser helper """
 
-        feeds = self.cfg.get("feeds")
+        feeds = self.cfg.get("feeds", list())
 
         for url in feeds:
 

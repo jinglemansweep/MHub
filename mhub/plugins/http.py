@@ -30,7 +30,7 @@ class Plugin(object):
 
         """ HTTP page processor helper """
 
-        pages = self.cfg.get("pages")
+        pages = self.cfg.get("pages", list())
 
         for url in pages:
 
