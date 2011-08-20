@@ -221,7 +221,7 @@ class CoreService(service.Service):
         cfg_web = self.cfg.get("web", dict())
         http_enabled = cfg_web.get("enabled", False)
         http_port = cfg_web.get("port", 8080)
-        webroot_dir = cfg_web.get("webroot_dir")
+        webroot_dir = cfg_web.get("webroot_dir", "")
 
         if http_enabled and os.path.exists(webroot_dir):
 
