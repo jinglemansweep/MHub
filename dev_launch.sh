@@ -4,4 +4,4 @@
 ./dev_build.sh
 
 echo "Launching..."
-twistd -n mhub -s
+twistd -l mhub.log -n mhub -s

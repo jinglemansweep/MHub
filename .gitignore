@@ -5,6 +5,7 @@ build
 dist
 #*#
 *~
+mhub.log
 twistd.log
 twistd.pid
 dropin.cache
