@@ -221,14 +221,15 @@ class CoreService(service.Service):
         cfg_web = self.cfg.get("web", dict())
         http_enabled = cfg_web.get("enabled", False)
         http_port = cfg_web.get("port", 8080)
-        webroot_dir = cfg_web.get("webroot_dir", "")
+        web_dir = cfg_web.get("web_dir", "")
+        web_root_dir = os.path.join(web_dir, "root")
 
-        if http_enabled and os.path.exists(webroot_dir):
+        if http_enabled and os.path.exists(web_root_dir):
 
             http_service = HTTPService()
             http_service.cs = self
-            http_root = static.File(webroot_dir)
-            http_root.putChild("send", http_service)
+            http_root = static.File(web_root_dir)
+            http_root.putChild("app", http_service)
             self.reactor.listenTCP(http_port,
                                    server.Site(http_root))
 

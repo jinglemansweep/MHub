@@ -28,9 +28,13 @@ def configure():
     if not os.path.exists(scripts_dir):
         os.makedirs(scripts_dir)
 
-    webroot_dir = os.path.join(config_dir, "webroot")
-    if not os.path.exists(webroot_dir):
-        os.makedirs(webroot_dir)
+    web_dir = os.path.join(config_dir, "web")
+    if not os.path.exists(web_dir):
+        os.makedirs(web_dir)
+
+    web_templates_dir = os.path.join(web_dir, "templates")
+    if not os.path.exists(web_templates_dir):
+        os.makedirs(web_templates_dir)
 
     open(os.path.join(scripts_dir, "on_init.py"), "a").close()
     open(os.path.join(scripts_dir, "on_message.py"), "a").close()
@@ -49,7 +53,7 @@ def configure():
                                cache_dir,
                                plugins_dir,
                                scripts_dir,
-                               webroot_dir)
+                               web_dir)
 
         stream = file(app_config_filename, "w")
         yaml.dump(cfg, stream)
@@ -63,7 +67,7 @@ def generate_default(config_dir,
                      cache_dir,
                      plugin_dir,
                      scripts_dir,
-                     webroot_dir):
+                     web_dir):
 
     """ Generate default configuration """
 
@@ -84,7 +88,8 @@ def generate_default(config_dir,
         "web": {
             "enabled": True,
             "port": 8080,
-            "root_dir": webroot_dir
+            "web_dir": web_dir,
+            "template": "default.tmpl"
         },
         "xmlrpc": {
             "enabled": True,

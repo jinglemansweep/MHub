@@ -1,4 +1,5 @@
 from twisted.web import resource, static
+from jinja2 import Environment, FileSystemLoader
 
 
 class HTTPService(resource.Resource):
@@ -15,6 +16,22 @@ class HTTPService(resource.Resource):
 
 
     def render_GET(self, request):
+
+        if request.path.startswith("/app/send"):
+            return self.render_app_send(request)
+        else:
+            return self.render_index(request)
+
+
+    def render_index(self, request):
+
+        env = Environment(loader=FileSystemLoader("/home/louis/.config/mhub/web/templates"))
+        tmpl = env.get_template("default.tmpl")
+        
+        return str(tmpl.render())
+
+
+    def render_app_send(self, request):
 
         args = request.args
  

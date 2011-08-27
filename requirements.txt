@@ -1,4 +1,4 @@
-flask
+jinja2
 kombu
 feedparser
 python-twitter
