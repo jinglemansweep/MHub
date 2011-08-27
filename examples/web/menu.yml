@@ -1,0 +1,22 @@
+root:
+  Lights:
+    Lounge:
+      Lamp 1:
+        - action: byebyestandby.action
+          params:
+            device: A1
+            state: false
+        - action: byebyestandby.action
+          params:
+            device: A1
+            state: false
+      Lamp 2:
+        - action: byebyestandby.action
+          params:
+            device: A2
+            state: false
+    
+
+    
+    
+      

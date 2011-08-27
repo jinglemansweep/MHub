@@ -26,7 +26,7 @@ class HTTPService(resource.Resource):
     def render_index(self, request):
 
         env = Environment(loader=FileSystemLoader("/home/louis/.config/mhub/web/templates"))
-        tmpl = env.get_template("default.tmpl")
+        tmpl = env.get_template("default.html")
         
         return str(tmpl.render())
 
