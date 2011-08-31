@@ -13,9 +13,8 @@ from kombu.messaging import Exchange, Queue, Producer, Consumer
 from pprint import pprint
 from socket import timeout
 from twisted.application import service, internet
-from twisted.internet import task, reactor, endpoints, protocol
-from twisted.python import log
-from twisted.python import usage
+from twisted.internet import task, reactor, endpoints, protocol, threads, defer
+from twisted.python import log, usage
 from twisted.web import server, static
 
 from mhub.configurator import configure
@@ -248,9 +247,17 @@ class CoreService(service.Service):
                 self.logger.debug("Registered '%s' from '%s' every %.2f seconds" % (func.__name__,
                                                                           plugin_name,
                                                                           interval))
-                task_obj = task.LoopingCall(func)
-                task_obj.start(interval)
+                def blocking_call(func, interval):
+                    d = threads.deferToThread(func)
+                    reactor.callLater(interval, blocking_call, func, interval)
+                    return d
+
+
+                d = blocking_call(func, interval)
+
+
             self.logger.info("%i tasks declared" % (len(plugin_tasks)))
+
 
 
     # === AMQP MESSAGE HANDLING ===

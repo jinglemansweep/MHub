@@ -1,3 +1,6 @@
+import os
+import yaml
+
 from twisted.web import resource, static
 from jinja2 import Environment, FileSystemLoader
 
@@ -15,6 +18,13 @@ class HTTPService(resource.Resource):
         return resource.Resource.getChild(self, name, request)
 
 
+    def get_menu(self, filename):
+
+        stream = file(filename, "r")
+        menu = yaml.load(stream)
+        return menu
+
+
     def render_GET(self, request):
 
         if request.path.startswith("/app/send"):
@@ -25,10 +35,19 @@ class HTTPService(resource.Resource):
 
     def render_index(self, request):
 
-        env = Environment(loader=FileSystemLoader("/home/louis/.config/mhub/web/templates"))
-        tmpl = env.get_template("default.html")
-        
-        return str(tmpl.render())
+        cfg_web = self.cs.cfg.get("web")
+        web_dir = cfg_web.get("web_dir")
+        template_dir = os.path.join(web_dir, "templates")
+        template_filename = cfg_web.get("template", "default.html")
+        menu_filename = os.path.join(web_dir, "menu.yml")
+        menu = self.get_menu(menu_filename)
+
+        env = Environment(loader=FileSystemLoader(template_dir))
+        tmpl = env.get_template(template_filename)
+        ctx = dict(menu=menu)
+        rendered = tmpl.render(ctx)
+
+        return str(rendered)
 
 
     def render_app_send(self, request):

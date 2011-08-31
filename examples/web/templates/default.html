@@ -8,20 +8,21 @@
   <title>MHub</title>
 </head>
 <body>
+  <pre>
+    {{ menu }}
+  </pre>
   <div data-role="page" id="home" class="type-home">
     <div data-role="header">
       <h1>MHub</h1>
     </div>
     <div data-role="content">
       <ul data-role="listview">
-        <li>
-          Test1
-          <ul>
-            <li>Hello</li>
-          </ul>
-        </li>
-        <li><a href="#">Test2</a></li>
-        <li><a href="#">Test 3</a></li>
+        {%- for item in menu recursive %}
+          <li>{{ item }}</li>
+          {%- if item.children -%}
+            <ul>{{ loop(item.children) }}</ul>
+          {%- endif %}
+        {%- endfor %}
       </ul>
     </div>
     <div data-role="footer">
