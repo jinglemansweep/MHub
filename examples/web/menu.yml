@@ -1,22 +1,18 @@
-root:
-  Lights:
-    Lounge:
-      Lamp 1:
-        - action: byebyestandby.action
+- id: group_1 
+  name: Group 1
+  children:
+    - id: action_1
+      name: Action 1
+      actions:
+      - action: test.action
+        params:
+          param1: 1
+    - id: group_2
+      name: Group 2
+      children:
+      - id: action_2
+        name: Action 2
+        actions:
+        - action: test.action
           params:
-            device: A1
-            state: false
-        - action: byebyestandby.action
-          params:
-            device: A1
-            state: false
-      Lamp 2:
-        - action: byebyestandby.action
-          params:
-            device: A2
-            state: false
-    
-
-    
-    
-      
+            param1: 1

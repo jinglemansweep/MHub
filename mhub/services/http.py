@@ -77,3 +77,18 @@ class HTTPService(resource.Resource):
             success = True
         
         return "OK" if success else "ERROR"
+
+
+
+class Node(object):
+
+    """ Nested node object """
+
+    name = None
+    children = None
+
+    def __init__(self, name):
+
+        self.name = name
+        self.children = list()
+

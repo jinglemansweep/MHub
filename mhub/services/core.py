@@ -252,9 +252,7 @@ class CoreService(service.Service):
                     reactor.callLater(interval, blocking_call, func, interval)
                     return d
 
-
                 d = blocking_call(func, interval)
-
 
             self.logger.info("%i tasks declared" % (len(plugin_tasks)))
 
