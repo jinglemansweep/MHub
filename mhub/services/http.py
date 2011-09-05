@@ -61,7 +61,7 @@ class HTTPService(resource.Resource):
         if len(action) > 0:
 
             del args["action"]
-            action_str = action[0]
+            action_str = str(action[0])
 
             for k, v in args.iteritems():
                 val = v[0]
@@ -71,7 +71,7 @@ class HTTPService(resource.Resource):
                     val = False
                 args[k] = val
 
-            msg = dict(action=action, params=args)
+            msg = dict(action=action_str, params=args)
     
             self.cs.amqp_send_message(msg)
             success = True

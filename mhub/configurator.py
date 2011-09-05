@@ -89,7 +89,7 @@ def generate_default(config_dir,
             "enabled": True,
             "port": 8080,
             "web_dir": web_dir,
-            "template": "default.tmpl"
+            "template": "default.html"
         },
         "xmlrpc": {
             "enabled": True,
