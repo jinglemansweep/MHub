@@ -8,6 +8,33 @@
   <title>MHub</title>
 </head>
 <body>
+  <script>
+    $(document).ready(function () {
+    
+      $("a").bind("click", function () {
+        var actionsText = $(this).attr("data-actions"),
+            actionsArray, actionArray,
+            action, paramsArray, paramArray, i, j,
+            url = "/app/send", data = {};
+        if(actionsText === "") { return; }
+        actionsArray = actionsText.split(";");
+        actionsArray = actionsArray.slice(0, actionsArray.length - 1);
+        for(i=0; i<actionsArray.length; i++) {
+            data = {};
+            actionArray = actionsArray[i].split(",")
+            action = actionArray[0];
+            paramsArray = actionArray.slice(1);
+            for(j=0; j<paramsArray.length; j++) {
+                paramArray = paramsArray[j].split(":");
+                data[paramArray[0]] = paramArray[1];
+            }
+            data["action"] = action;
+            $.ajax({"url": url, "data": data});
+        }
+      });
+
+    });
+  </script>
   <pre>
     {{ menu }}
   </pre>
@@ -18,10 +45,10 @@
     <div data-role="content">
       <ul data-role="listview" class="root">
         {%- for item in menu recursive %}
-          <li class="i_{{ item.id }}">
-            <a href="#">{{ item.name }}</a>
+          <li>
+            <a data-actions="{%- for action in item.actions %}{{ action.action|escape }}{%- for key in action.params %},{{ key|escape }}:{{ action.params[key]|escape }}{%- endfor %};{%- endfor %}">{{ item.name }}</a>
             {%- if item.children -%}
-              <ul class="l_{{ item.id }}">
+              <ul>
                 {{ loop(item.children) }}
               </ul>
             {%- endif %}

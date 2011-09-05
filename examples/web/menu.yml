@@ -1,18 +1,14 @@
-- id: group_1 
-  name: Group 1
+- name: Group 1
   children:
-    - id: action_1
-      name: Action 1
+    - name: Action 1
       actions:
       - action: test.action
         params:
           param1: 1
-    - id: group_2
-      name: Group 2
+    - name: Group 2
       children:
-      - id: action_2
-        name: Action 2
-        actions:
-        - action: test.action
-          params:
-            param1: 1
+        - name: Action 2
+          actions:
+          - action: test.action
+            params:
+              param1: 1
