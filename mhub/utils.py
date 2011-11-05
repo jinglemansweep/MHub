@@ -1,109 +1,73 @@
-from twisted.python import log
+import os
+import yaml
+
+from socket import gethostname
+from xdg import BaseDirectory
 
 
-class Logger(object):
+def get_configuration():
 
-    """ Logging utility class """
+    """ Read (or create) configuration files and directories """
 
-    # 60:TRACE 50:DEBUG 40:INFO 30:WARN 20:ERROR 10:FATAL
+    xdg_config = BaseDirectory.xdg_config_home
+    xdg_cache = BaseDirectory.xdg_cache_home
 
-    LEVELS = {60: "TRACE", 50: "DEBUG", 40: "INFO",
-              30: "WARN", 20: "ERROR", 10: "FATAL"} 
+    config_dir = os.path.join(xdg_config, "mhub")
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
 
+    cache_dir = os.path.join(xdg_cache, "mhub")
+    if not os.path.exists(cache_dir):
+        os.makedirs(cache_dir)
 
-    def __init__(self, 
-                 name="default", 
-                 producer=None,
-                 level=40):
+    app_config_filename = os.path.join(config_dir, "app.yml")
 
-        """ Constructor """
+    if os.path.exists(app_config_filename):
+        stream = file(app_config_filename, "r")
+        app_cfg = yaml.load(stream)
+    else:
+        app_cfg = generate_default(config_dir,
+                               cache_dir)
+        stream = file(app_config_filename, "w")
+        yaml.dump(app_cfg, stream)
+    stream.close()
 
-        self.name = name
-        self.producer = producer
-        self.level = level
+    plugins_config_filename = os.path.join(config_dir, "plugins.yml")
 
+    if os.path.exists(plugins_config_filename):
+        stream = file(plugins_config_filename, "r")
+        plugins_cfg = yaml.load(stream)
+    else:
+        plugins_cfg = dict()
+        stream = file(plugins_config_filename, "w")
+        yaml.dump(plugins_cfg, stream)
+    stream.close()
 
-    def log(self, 
-            message, 
-            severity=40,
-            publish=False):
+    app_cfg["general"]["app_id"] = "mhub"
+    cfg = dict(app=app_cfg, plugins=plugins_cfg)
 
-        """ Message handler """
-
-        # if severity >= self.level: return
-
-        level_name = self.LEVELS.get(severity).upper()
-        level_short = level_name[0]
-
-        msg = "%s [%s]: %s" % (level_short, self.name, message)
-        log.msg(msg)
-
-        """
-
-        if publish:
-            try:
-                self.producer.publish({
-                    "action": "xmpp.send",
-                    "params": {
-                        "recipient": "jinglemansweep@gmail.com",
-                        "body": msg
-                    }
-                })
-            except:
-                pass
-
-        """
-
-    def debug(self, 
-              message,
-              publish=False):
-
-        """ Debug message """
-
-        self.log(message, 
-                 severity=50, 
-                 publish=publish)
+    return cfg
 
 
-    def info(self, 
-             message,
-             publish=False):
+def generate_default(config_dir,
+                     cache_dir):
 
-        """ Info message """
+    """ Generate default configuration """
 
-        self.log(message, 
-                 severity=40,
-                 publish=publish)
+    cfg = {
+        "general": {
+            "name": gethostname(),
+            "config_dir": config_dir,
+            "cache_dir": cache_dir,
+            "verbose": False,
+        },
+        "amqp": {
+            "host": "localhost",
+            "port": 5672,
+            "username": "guest",
+            "password": "guest",
+            "vhost": "/"
+        },
+    }
 
-
-    def warn(self, 
-             message,
-             publish=False):
-
-        """ Warn message """
-
-        self.log(message, 
-                 severity=30,
-                 publish=publish)
-
-
-    def error(self, 
-              message,
-              publish=False):
-
-        """ Error message """
-
-        self.log(message, 
-                 severity=20,
-                 publish=publish)
-
-
-    def fatal(self,
-              message,
-              publish=False):
-
-        """ Fatal message """
-
-        self.log(message, 
-                 severity=10,
-                 publish=publish)
+    return cfg

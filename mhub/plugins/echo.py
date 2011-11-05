@@ -1,26 +1,16 @@
-import datetime
 
-from twisted.python import log
-
-
-class Plugin(object):
-
-    """ Echo Plugin """
-
-    name = "echo"
-    description = "Simple message echo service"
-    author = "MHub"
+from base import BasePlugin
 
 
-    def on_init(self):
 
-        pass
-    
+class EchoPlugin(BasePlugin):
 
-    def on_message(self, data, message):
+    def __init__(self, name, cls, service, cfg):
 
-        """ On AMQP message handler """
-
-        self.logger.info("Echo: %s" % (message.body))
+        BasePlugin.__init__(self, name, cls, service, cfg)
 
 
+    def process_message(self, msg):
+
+        
+        self.logger.debug("Echo: %s" % msg)
