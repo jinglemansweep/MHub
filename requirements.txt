@@ -9,3 +9,4 @@ pyopenssl
 python-spidermonkey
 python-mpd-twisted
 http://www.freedesktop.org/~lanius/pyxdg-0.18.tar.gz
+sphinx
