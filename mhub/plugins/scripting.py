@@ -1,11 +1,16 @@
 import os
-import spidermonkey
-from base import BasePlugin
 
+
+from base import BasePlugin
 
 class ScriptingPlugin(BasePlugin):
 
     def __init__(self, name, cls, service, cfg):
+
+        try:
+            import spidermonkey
+        except ImportError:
+            return
 
         BasePlugin.__init__(self, name, cls, service, cfg)
 
