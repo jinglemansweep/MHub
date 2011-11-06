@@ -22,7 +22,10 @@ class Mock(object):
     def __getattr__(self, name):
         return Mock
 
-MOCK_MODULES = ["twisted"]
+MOCK_MODULES = ["twisted",
+                "twisted.application",
+                "twisted.application.service",
+                "twisted.internet"]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
 
@@ -32,7 +35,7 @@ for mod_name in MOCK_MODULES:
 #sys.path.insert(0, os.path.abspath('.'))
 
 #sys.path.insert(0, os.path.abspath(".."))
-sys.path.insert(0, os.path.abspath("."))
+sys.path.insert(0, os.path.abspath(".."))
 
 
 

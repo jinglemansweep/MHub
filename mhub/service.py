@@ -1,11 +1,11 @@
 import json
 import logging
-from twisted.application import service
+from twisted.application.service import Service
 from twisted.internet import reactor, threads
 
 
 
-class BaseService(service.Service):
+class BaseService(Service):
 
 
     """ Base Service """
