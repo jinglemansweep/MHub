@@ -9,4 +9,3 @@ mhub.log
 twistd.log
 twistd.pid
 dropin.cache
-docs/_build
