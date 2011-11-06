@@ -25,7 +25,9 @@ class Mock(object):
 MOCK_MODULES = ["twisted",
                 "twisted.application",
                 "twisted.application.service",
-                "twisted.internet"]
+                "twisted.internet",
+                "spidermonkey".
+                "nspr"]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = Mock()
 
