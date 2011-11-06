@@ -13,6 +13,8 @@ Contents:
 
 Hello
 
+New docs
+
 .. automodule:: mhub.service
     :members:
 
