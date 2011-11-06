@@ -163,20 +163,20 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'MHubdoc'
+htmlhelp_basename = 'mhub-docs'
 
 
 # -- Options for LaTeX output --------------------------------------------------
 
 latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+'papersize': 'a4paper',
 
 # The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+'pointsize': '10pt',
 
 # Additional stuff for the LaTeX preamble.
-#'preamble': '',
+'preamble': ''s
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -227,7 +227,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'MHub', u'MHub Documentation',
-   u'JingleManSweep', 'MHub', 'One line description of project.',
+   u'JingleManSweep', 'MHub', 'Home Automation Framework',
    'Miscellaneous'),
 ]
 
