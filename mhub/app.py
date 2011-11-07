@@ -1,3 +1,16 @@
+"""
+
+MHub Applications Module
+
+
+.. module:: app
+   :platform: Unix
+   :synopsis: MHub Applications Module
+
+.. moduleauthor:: JingleManSweep <jinglemansweep@gmail.com>
+
+"""
+
 import logging
 
 from twisted.application.service import MultiService, Application
@@ -15,6 +28,13 @@ from plugins.mpd_client import MpdPlugin
 
 class MHubApp(object):
 
+    """
+    Core application container responsible for managing and running of configured plugins.
+
+    :param cfg: Application configuration dictionary
+    :type cfg: dict.
+    """
+
     _class_map = {
         "amqp": AmqpPlugin,
         "xmpp": XmppPlugin,
@@ -25,6 +45,10 @@ class MHubApp(object):
     }
 
     def __init__(self, cfg=None):
+
+        """
+        Constructor
+        """
 
         self.cfg = cfg or dict()
         self.logger = logging.getLogger("app")
@@ -38,10 +62,19 @@ class MHubApp(object):
 
     def initialise(self):
 
+        """
+        Initialise the application
+        """
+
+
         self.initialise_plugins()
 
 
     def initialise_plugins(self):
+
+        """
+        Initialise all configured and enabled plugins
+        """
 
         self.logger.info("Registering plugins")
 
@@ -61,6 +94,12 @@ class MHubApp(object):
             self.logger.debug("%s.%s registered" % (p_cls_str, name))
 
     def get_application(self):
+
+        """
+        Get the Twisted application object.
+
+        :returns: Application
+        """
 
         return self.application
 

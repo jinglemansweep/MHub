@@ -31,6 +31,19 @@ from base import BasePlugin
 
 class AmqpPlugin(BasePlugin):
 
+    """
+    AMQP messaging bridge plugin.
+
+    :param name: Name of plugin.
+    :type name: str.
+    :param cls: Class/type of plugin.
+    :type cls: str.
+    :param service: Container service.
+    :type service: mhub.service.
+    :param cfg: Plugin configuration dictionary.
+    :type cfg: dict.
+    """
+
     def __init__(self, name, cls, service, cfg):
 
         BasePlugin.__init__(self, name, cls, service, cfg)
@@ -43,17 +56,38 @@ class AmqpPlugin(BasePlugin):
 
     def amqp_send(self, msg):
 
+        """
+        Send an AMQP message to the broker.
+
+        :param msg: Message dictionary.
+        :type msg: dict.
+        """
+
         json_msg = json.dumps(msg)
         self.factory.send_message(msg=json_msg)
 
 
     def amqp_receive(self, msg):
 
+        """
+        AMQP message received callback.
+
+        :param msg: Message dictionary.
+        :type msg: dict.
+        """
+
         self.publish_event("receive", msg)
 
 
     def process_message(self, msg):
-        
+
+        """
+        Service message processing callback.
+
+        :param msg: Message dictionary.
+        :type msg: dict.
+        """
+
         #self.logger.debug("AMQP: %s" % (msg))
         pass
 
@@ -61,6 +95,7 @@ class AmqpPlugin(BasePlugin):
 
 
 class AmqpProtocol(AMQClient):
+    
     """The protocol is created and destroyed each time a connection is created and lost."""
 
     def connectionMade(self):

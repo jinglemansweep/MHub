@@ -1,3 +1,15 @@
+"""
+
+MHub Services Module
+
+.. module:: service
+   :platform: Unix
+   :synopsis: MHub Services Module
+
+.. moduleauthor:: JingleManSweep <jinglemansweep@gmail.com>
+
+"""
+
 import json
 import logging
 from twisted.application.service import Service
@@ -8,7 +20,14 @@ from twisted.internet import reactor, threads
 class BaseService(Service):
 
 
-    """ Base Service """
+    """
+    Core service which manages all plugins, factories and protocols and any communications between them.
+
+    :param cfg: Service configuration object
+    :type cfg: dict.
+    :param reactor: Twisted Reactor object
+    :type reactor: twisted.internet.reactor
+    """
 
 
     def __init__(self,
@@ -25,10 +44,12 @@ class BaseService(Service):
         self.plugins = dict()
         self.queue = list()
 
-        
+
     def setup(self):
 
-        """ Setup service """
+        """
+        Setup service.
+        """
 
         #self.setup_plugins()
         #self.init_plugins()
@@ -38,6 +59,10 @@ class BaseService(Service):
     # Reactor handling
 
     def setup_reactor(self):
+
+        """
+        Setup Twisted reactor.
+        """
 
         print "setup reactor"
 
@@ -64,6 +89,10 @@ class BaseService(Service):
 
     def install_plugin(self, name, plugin):
 
+        """
+        Install plugin into service.
+        """
+
         self.plugins[name] = plugin
         
     # Proxies for Factories and Protocols
@@ -71,6 +100,10 @@ class BaseService(Service):
 
 
     def process_queue(self):
+
+        """
+        Process the incoming service message queue and forward onto all plugins (excluding sending plugin).
+        """
 
         while len(self.queue):
             msg = self.queue.pop()
@@ -84,7 +117,9 @@ class BaseService(Service):
 
     def startService(self):
         
-        """ Starts the service """
+        """
+        Start the main Twisted service handler.
+        """
 
         self.setup()
         service.Service.startService(self)
@@ -92,6 +127,7 @@ class BaseService(Service):
 
 
 class MHubService(BaseService):
+
     """ MHub Twisted Service """
 
     pass

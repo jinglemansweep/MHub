@@ -8,6 +8,19 @@ from base import BasePlugin
 
 class SchedulerPlugin(BasePlugin):
 
+    """
+    Time based scheduler plugin.
+    
+    :param name: Name of plugin.
+    :type name: str.
+    :param cls: Class/type of plugin.
+    :type cls: str.
+    :param service: Container service.
+    :type service: mhub.service.
+    :param cfg: Plugin configuration dictionary.
+    :type cfg: dict.s
+    """
+
     def __init__(self, name, cls, service, cfg):
 
         BasePlugin.__init__(self, name, cls, service, cfg)
@@ -23,7 +36,9 @@ class SchedulerPlugin(BasePlugin):
 
     def process_intervals(self):
         
-        """ Process current date and time values and changes """
+        """
+        Process current date and time values and changes
+        """
 
         dt = datetime.datetime.now()
 
@@ -49,7 +64,10 @@ class SchedulerPlugin(BasePlugin):
 
 
     def process_schedules(self):
-        """ Process configured schedules """
+
+        """
+        Process configured schedules.
+        """
 
         schedules = self.cfg.get("schedules")
 

@@ -5,6 +5,19 @@ from base import BasePlugin
 
 class ScriptingPlugin(BasePlugin):
 
+    """
+    High level JavaScript control plugin.
+
+    :param name: Name of plugin.
+    :type name: str.
+    :param cls: Class/type of plugin.
+    :type cls: str.
+    :param service: Container service.
+    :type service: mhub.service.
+    :param cfg: Plugin configuration dictionary.
+    :type cfg: dict.
+    """
+
     def __init__(self, name, cls, service, cfg):
 
         try:
@@ -29,6 +42,13 @@ class ScriptingPlugin(BasePlugin):
 
     def process_message(self, msg):
 
+        """
+        Service message process callback function.
+
+        :param msg: Message dictionary.
+        :type msg: dict.
+        """
+
         self.jsctx.add_global("env", self.env)
         self.jsctx.add_global("msg", msg)
 
@@ -43,7 +63,12 @@ class ScriptingPlugin(BasePlugin):
                 pass
             self.env = self.jsctx.execute("env;")
 
+
     def load_scripts(self):
+
+        """
+        Load configured JavaScripts and register periodic reloading callbacks.
+        """
 
         reload_interval = self.cfg.get("reload_interval", 60)
 
@@ -67,10 +92,26 @@ class ScriptingPlugin(BasePlugin):
 
     def js_log(self, msg):
 
+        """
+        JavaScript logger wrapper function.
+
+        :param msg: Message to log.
+        :type msg: str.
+        """
+
         self.logger.info("JS: %s" % (msg))
 
 
     def js_publish_event(self, name, detail=None):
+
+        """
+        JavaScript event publishing wrapper function.
+
+        :param name: Name of event.
+        :type name: str.
+        :param detail: Detail dictionary.
+        :type detail: dict.
+        """
 
         name = self.js_to_python(name)
         detail = self.js_to_python(detail)
@@ -79,11 +120,23 @@ class ScriptingPlugin(BasePlugin):
 
     def js_clear_env(self):
 
+        """
+        Reset/clear JavaScript environment/context dictionary.
+        """
+
         self.env = dict()
 
 
     def js_to_python(self, obj):
-        
+
+        """
+        Convert JavaScript object into nested Python dictionary.
+
+        :param obj: JavaScript object.
+        :type obj: spidermonkey.Object
+        :returns: Python dictionary.
+        """
+
         obj_type = type(obj)
 
         if obj_type == spidermonkey.Object:

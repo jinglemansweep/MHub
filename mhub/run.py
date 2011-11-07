@@ -1,3 +1,15 @@
+"""
+
+MHub Twisted Application Container Module
+
+.. module:: run
+   :platform: Unix
+   :synopsis: MHub Twisted application containment and initialisation code
+
+.. moduleauthor:: JingleManSweep <jinglemansweep@gmail.com>
+
+"""
+
 import logging
 from twisted.python import log
 

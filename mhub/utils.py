@@ -1,3 +1,15 @@
+"""
+
+MHub Utilities Module
+
+.. module:: utils
+   :platform: Unix
+   :synopsis: MHub Utilities Module
+
+.. moduleauthor:: JingleManSweep <jinglemansweep@gmail.com>
+
+"""
+
 import os
 import yaml
 
@@ -7,7 +19,11 @@ from xdg import BaseDirectory
 
 def get_configuration():
 
-    """ Read (or create) configuration files and directories """
+    """
+    Read (or create) configuration files and directories.
+
+    :returns: Application configuration dictionary
+    """
 
     xdg_config = BaseDirectory.xdg_config_home
     xdg_cache = BaseDirectory.xdg_cache_home
@@ -52,7 +68,15 @@ def get_configuration():
 def generate_default(config_dir,
                      cache_dir):
 
-    """ Generate default configuration """
+    """
+    Generate default configuration
+
+    :param config_dir: Configuration directory path
+    :type config_dir: str.
+    :param cache_dir: Cache directory path
+    :type cache_dir: str.
+    :returns: Default configuration dictionary
+    """
 
     cfg = {
         "general": {
