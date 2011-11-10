@@ -1,0 +1,70 @@
+telnet001:
+
+  enabled: true
+  class: "telnet"
+  port: 9991
+
+amqp001:
+
+  enabled: true
+  class: "amqp"
+  provides: "messaging"
+  host: "localhost"
+  port: 5672
+  username: "guest"
+  password: "guest"
+  vhost: "/"
+
+xmpp001:
+
+  enabled: true
+  class: "xmpp"
+  provides: "messaging"
+  host: "talk.google.com"
+  port: 5662
+  username: "jabber@gmail.com"
+  password: "secret-password"
+
+mpd_alpha:
+
+  enabled: true
+  class: "mpd"
+  provides: "audio"
+  host: 192.168.1.11
+  port: 6600
+
+mpd_beta:
+
+  enabled: true
+  class: "mpd"
+  provides: "audio"
+  host: 192.168.1.12
+  port: 6600    
+
+scheduler001:
+
+  enabled: true
+  class: "scheduler"
+  provides: "scheduling"
+  publish_intervals: ["year", "month", "day", "hour", "minute"]
+  schedules:
+    test:
+      scope: day
+      hour: 9
+      minute: 0
+      fuzziness: 15 
+
+scripting001:
+
+  enabled: true
+  class: "scripting"
+  provides: "scripting"
+  scripts:
+    - ~/.config/mhub/scripts/test1.js
+    - ~/.config/mhub/scripts/test2.js
+
+echo001:
+
+  enabled: false
+  class: "echo"
+  provides: "logging"

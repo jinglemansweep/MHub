@@ -10,4 +10,5 @@ Plugins
    api_plugins_mpd_client
    api_plugins_scheduler
    api_plugins_scripting
+   api_plugins_telnet
    api_plugins_xmpp

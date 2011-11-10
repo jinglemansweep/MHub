@@ -23,6 +23,7 @@ from plugins.scheduler import SchedulerPlugin
 from plugins.scripting import ScriptingPlugin
 from plugins.echo import EchoPlugin
 from plugins.mpd_client import MpdPlugin
+from plugins.telnet import TelnetPlugin
 
 
 
@@ -41,7 +42,8 @@ class MHubApp(object):
         "mpd": MpdPlugin,
         "scheduler": SchedulerPlugin,
         "scripting": ScriptingPlugin,
-        "echo": EchoPlugin
+        "echo": EchoPlugin,
+        "telnet": TelnetPlugin
     }
 
     def __init__(self, cfg=None):
