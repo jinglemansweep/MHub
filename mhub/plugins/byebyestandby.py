@@ -46,6 +46,7 @@ class ByeByeStandbyPlugin(BasePlugin):
         msg_type = msg.get("type")
         event = msg.get("event")
         detail = msg.get("detail")
+        frequency = detail.get("frequency", 3)
 
         if msg_type == "event" and event == "switch":
             state = 1 if detail.get("state", False) else 0
@@ -55,7 +56,8 @@ class ByeByeStandbyPlugin(BasePlugin):
             if device and host:
                 h, u = device[0], device[1:]
                 cmd = "D:%i%s%02d:E" % (int(state), h.upper(), int(u))
-                self.socket.sendto(cmd, (host, port))
+                for _ in xrange(frequency):
+                    self.socket.sendto(cmd, (host, port))
 
 
 
@@ -64,6 +66,12 @@ class ByeByeStandbyProtocol(DatagramProtocol):
     """
     ByeByeStandby Twisted protocol
     """
+
+    def __init__(self):
+
+        self.logger = logging.getLogger("plugin.protocol")
+
+        
 
     def datagramReceived(self, data, (host, port)):
 
@@ -74,7 +82,7 @@ class ByeByeStandbyProtocol(DatagramProtocol):
         :type data: str.
         """
 
-        print data
+        self.logger.debug(data)
         #self.plugin.publish_event("input", dict(data=data))
 
 
