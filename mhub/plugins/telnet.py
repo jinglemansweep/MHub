@@ -1,3 +1,4 @@
+import json
 import logging
 from twisted.internet.protocol import Protocol, Factory
 from twisted.application.internet import TCPServer
@@ -44,11 +45,19 @@ class TelnetProtocol(Protocol):
         """
         Data received callback function
 
-        :param data: Data received.
+        :param data: Data received.`
         :type data: str.
         """
 
-        self.factory.plugin.publish_event("input", dict(data=data))
+        try:
+            data = json.loads(data)
+        except Exception, e:
+            print e
+            print "ERRRR"
+            pass
+
+        self.factory.plugin.publish(data)
+        #self.factory.plugin.publish_event("input", data)
 
 
 class TelnetFactory(Factory):

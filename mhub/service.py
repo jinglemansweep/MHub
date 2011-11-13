@@ -106,11 +106,16 @@ class BaseService(Service):
         """
 
         while len(self.queue):
-            msg = self.queue.pop()
-            for name, plugin in self.plugins.iteritems():
-                if plugin.name == msg.get("source").get("name"): continue
-                plugin.queue.append(msg)
-                plugin.process_queue()
+            try:
+                msg = self.queue.pop()
+                source = msg.get("source", dict())
+                source_name = source.get("name", "")
+                for name, plugin in self.plugins.iteritems():
+                    if plugin.name == source_name: continue
+                    plugin.queue.append(msg)
+                    plugin.process_queue()
+            except:
+                pass
 
     # Twisted overrides
 

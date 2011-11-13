@@ -40,7 +40,8 @@ class MpdPlugin(BasePlugin):
         :type msg: dict.
         """
 
-        self.logger.debug(msg)
+        pass
+        # self.logger.debug(msg)
 
         
     def status(self, result):

@@ -49,6 +49,19 @@ class BasePlugin(object):
         pass
     
 
+    def publish(self, message):
+
+        """
+        Publish message to service.
+
+        :param message: Message dictionary.
+        :type message: dict.
+        """
+
+        self.service.queue.append(message)
+        self.service.process_queue()
+
+
     def publish_event(self, name, detail):
 
         """
@@ -70,8 +83,7 @@ class BasePlugin(object):
             "detail": detail
         }
 
-        self.logger.info("Published '%s' event (from '%s.%s')" % (name, self.cls, self.name))
-        self.logger.debug(detail)
+        self.publish(msg)
 
-        self.service.queue.append(msg)
-        self.service.process_queue()
+        self.logger.info("Published '%s' event (from '%s.%s')" % (name, self.cls, self.name))
+
