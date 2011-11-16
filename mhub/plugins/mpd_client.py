@@ -30,7 +30,6 @@ class MpdPlugin(BasePlugin):
                                 self.cfg.get("port", 6600),
                                 self.factory)
 
-        
     def status(self, result):
 
         """

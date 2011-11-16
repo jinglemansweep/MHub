@@ -18,11 +18,14 @@ from twisted.internet import reactor
 
 from service import MHubService
 from plugins.amqp import AmqpPlugin
+from plugins.byebyestandby import ByeByeStandbyPlugin
 from plugins.xmpp import XmppPlugin
 from plugins.scheduler import SchedulerPlugin
 from plugins.scripting import ScriptingPlugin
 from plugins.echo import EchoPlugin
 from plugins.mpd_client import MpdPlugin
+from plugins.telnet import TelnetPlugin
+from plugins.twitter_client import TwitterPlugin
 
 
 
@@ -41,7 +44,10 @@ class MHubApp(object):
         "mpd": MpdPlugin,
         "scheduler": SchedulerPlugin,
         "scripting": ScriptingPlugin,
-        "echo": EchoPlugin
+        "echo": EchoPlugin,
+        "telnet": TelnetPlugin,
+        "twitter": TwitterPlugin,
+        "byebyestandby": ByeByeStandbyPlugin
     }
 
     def __init__(self, cfg=None):
