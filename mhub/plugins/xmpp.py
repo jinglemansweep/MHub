@@ -34,19 +34,6 @@ class XmppPlugin(BasePlugin):
         self.factory.setHandlerParent(self.client)
 
 
-    def process_message(self, msg):
-
-        """
-        Service message processing callback function.
-
-        :param msg: Message dictionary.
-        :type msg: dict.
-        """
-
-        #self.logger.debug("XMPP %s" % (msg))
-        pass
-
-
 class XmppFactory(MessageProtocol):
 
 

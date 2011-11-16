@@ -30,18 +30,6 @@ class MpdPlugin(BasePlugin):
                                 self.cfg.get("port", 6600),
                                 self.factory)
 
-
-    def process_message(self, msg):
-
-        """
-        Service message process callback function.
-
-        :param msg: Message dictionary.
-        :type msg: dict.
-        """
-
-        self.logger.debug(msg)
-
         
     def status(self, result):
 

@@ -1,4 +1,4 @@
-
+import louie
 from base import BasePlugin
 
 
@@ -22,8 +22,10 @@ class EchoPlugin(BasePlugin):
 
         BasePlugin.__init__(self, name, cls, service, cfg)
 
+        louie.connect(self.process_event)
 
-    def process_message(self, msg):
+
+    def process_event(self, detail, signal, sender):
 
         """
         Service message process callback.
@@ -32,4 +34,4 @@ class EchoPlugin(BasePlugin):
         :type msg: dict.
         """
         
-        self.logger.debug("Echo: %s" % msg)
+        self.logger.debug("Echo: %s > %s" % ((sender, signal), detail))

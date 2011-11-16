@@ -1,4 +1,5 @@
 import logging
+import louie
 
 
 class BasePlugin(object):
@@ -23,31 +24,7 @@ class BasePlugin(object):
         self.service = service
         self.cfg = cfg
         self.logger = logging.getLogger("plugin")
-        self.queue = list()
 
-
-    def process_queue(self):
-
-        """
-        Process messages received from service.
-        """
-
-        while len(self.queue):
-            msg = self.queue.pop()
-            self.process_message(msg)
-
-
-    def process_message(self, msg):
-
-        """
-        Message processing callback function.
-
-        :param msg: Message dictionary.
-        :type msg: dict.
-        """
-
-        pass
-    
 
     def publish_event(self, name, detail):
 
@@ -60,18 +37,8 @@ class BasePlugin(object):
         :type detail: dict.
         """
 
-        msg = {
-            "type": "event",
-            "event": name,
-            "source": {
-                "class": self.cls,
-                "name": self.name
-            },
-            "detail": detail
-        }
-
         self.logger.info("Published '%s' event (from '%s.%s')" % (name, self.cls, self.name))
         self.logger.debug(detail)
+    
+        louie.send(name, (self.cls, self.name), detail) 
 
-        self.service.queue.append(msg)
-        self.service.process_queue()

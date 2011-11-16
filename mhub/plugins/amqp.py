@@ -79,20 +79,6 @@ class AmqpPlugin(BasePlugin):
         self.publish_event("receive", msg)
 
 
-    def process_message(self, msg):
-
-        """
-        Service message processing callback.
-
-        :param msg: Message dictionary.
-        :type msg: dict.
-        """
-
-        #self.logger.debug("AMQP: %s" % (msg))
-        pass
-
-
-
 
 class AmqpProtocol(AMQClient):
     

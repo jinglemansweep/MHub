@@ -12,6 +12,7 @@ MHub Services Module
 
 import json
 import logging
+import louie
 from twisted.application.service import Service
 from twisted.internet import reactor, threads
 
@@ -42,7 +43,6 @@ class BaseService(Service):
         self.cfg = cfg
         self.factories = dict()
         self.plugins = dict()
-        self.queue = list()
 
 
     def setup(self):
@@ -51,8 +51,6 @@ class BaseService(Service):
         Setup service.
         """
 
-        #self.setup_plugins()
-        #self.init_plugins()
         self.setup_reactor()
         
 
@@ -95,22 +93,6 @@ class BaseService(Service):
 
         self.plugins[name] = plugin
         
-    # Proxies for Factories and Protocols
-
-
-
-    def process_queue(self):
-
-        """
-        Process the incoming service message queue and forward onto all plugins (excluding sending plugin).
-        """
-
-        while len(self.queue):
-            msg = self.queue.pop()
-            for name, plugin in self.plugins.iteritems():
-                if plugin.name == msg.get("source").get("name"): continue
-                plugin.queue.append(msg)
-                plugin.process_queue()
 
     # Twisted overrides
 

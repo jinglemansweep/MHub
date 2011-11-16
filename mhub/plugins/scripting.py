@@ -1,3 +1,4 @@
+import louie
 import os
 
 
@@ -39,8 +40,10 @@ class ScriptingPlugin(BasePlugin):
         
         self.load_scripts()
         
+        louie.connect(receiver=self.process_event)
 
-    def process_message(self, msg):
+
+    def process_event(self, detail, signal, sender):
 
         """
         Service message process callback function.
@@ -49,8 +52,12 @@ class ScriptingPlugin(BasePlugin):
         :type msg: dict.
         """
 
+        event = dict(signal=signal,
+                     sender=sender,
+                     detail=detail)
+
         self.jsctx.add_global("env", self.env)
-        self.jsctx.add_global("msg", msg)
+        self.jsctx.add_global("event", event)
 
         for filename, body in self.scripts.iteritems():
             try:
@@ -62,6 +69,7 @@ class ScriptingPlugin(BasePlugin):
             except KeyError, e:
                 pass
             self.env = self.jsctx.execute("env;")
+
 
 
     def load_scripts(self):
