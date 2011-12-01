@@ -45,7 +45,7 @@ class TelnetProtocol(Protocol):
         """
         Data received callback function
 
-        :param data: Data received.`
+        :param data: Data received.
         :type data: str.
         """
 
@@ -53,7 +53,6 @@ class TelnetProtocol(Protocol):
             data = json.loads(data)
         except Exception, e:
             print e
-            print "ERRRR"
             pass
 
         self.factory.plugin.publish(data)

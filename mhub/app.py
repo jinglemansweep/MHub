@@ -99,6 +99,7 @@ class MHubApp(object):
             self.service.install_plugin(name, p_inst)
             self.logger.debug("%s.%s registered" % (p_cls_str, name))
 
+
     def get_application(self):
 
         """

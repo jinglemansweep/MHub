@@ -26,19 +26,22 @@ class BasePlugin(object):
         self.logger = logging.getLogger("plugin")
 
 
-    def publish_event(self, name, detail):
+    def publish_event(self, event_name, detail):
 
         """
         Publish (send) event to service.
 
-        :param name: Name of event.
-        :type name: str.
+        :param event_name: Name of event.
+        :type event_name: str.
         :param detail: Detail dictionary.
         :type detail: dict.
         """
 
-        self.logger.info("Published '%s' event (from '%s.%s')" % (name, self.cls, self.name))
+        self.logger.info("Published '%s' event (from '%s.%s')" % (event_name, self.cls, self.name))
         self.logger.debug(detail)
     
-        louie.send(name, (self.cls, self.name), detail) 
+        louie.send(event_name,
+                   self.name,
+                   detail, 
+                   cls=self.cls) 
 
