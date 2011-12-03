@@ -26,7 +26,7 @@ from plugins.echo import EchoPlugin
 from plugins.mpd_client import MpdPlugin
 from plugins.telnet import TelnetPlugin
 from plugins.twitter_client import TwitterPlugin
-
+from plugins.web import WebPlugin
 
 
 class MHubApp(object):
@@ -47,7 +47,8 @@ class MHubApp(object):
         "echo": EchoPlugin,
         "telnet": TelnetPlugin,
         "twitter": TwitterPlugin,
-        "byebyestandby": ByeByeStandbyPlugin
+        "byebyestandby": ByeByeStandbyPlugin,
+        "web": WebPlugin
     }
 
     def __init__(self, cfg=None):
