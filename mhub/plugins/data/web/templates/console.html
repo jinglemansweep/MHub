@@ -1,0 +1,37 @@
+<html>
+<head>
+  <title>MHub Console</title>
+  <link rel="stylesheet" href="/static/css/base.css" />
+  <script type="text/javascript" src="/static/js/jquery.js"></script>
+  <script type="text/javascript">
+
+    $(document).ready(function () {
+
+        var Socket = window["MozWebSocket"] || window["WebSocket"];
+        var ws = new Socket("ws://{{ ws_url }}");
+ 
+        ws.onmessage = function(evt) {
+            var data = JSON.parse(evt.data);
+            console.dir(data);
+        }
+        
+        ws.onopen = function(evt) {
+            console.log("WS Open");
+        }
+        
+        ws.onerror = function(evt) {
+            console.log("WS Error");
+        }
+       
+        ws.onclose = function(evt) {
+            console.log("WS Close");
+        }
+
+    });
+
+  </script>
+</head>
+<body>
+  <h1>MHub Console</h1>
+</body>
+</html>
