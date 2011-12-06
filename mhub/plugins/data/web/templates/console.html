@@ -3,6 +3,7 @@
   <title>MHub Console</title>
   <link rel="stylesheet" href="/static/css/base.css" />
   <script type="text/javascript" src="/static/js/jquery.js"></script>
+  <script type="text/javascript" src="/static/js/jquery-ui.js"></script>
   <script type="text/javascript">
 
     $(document).ready(function () {
@@ -11,8 +12,15 @@
         var ws = new Socket("ws://{{ ws_url }}");
  
         ws.onmessage = function(evt) {
-            var data = JSON.parse(evt.data);
+            var data = JSON.parse(evt.data),
+                el;
+
+            $("#viewport .latest").removeClass("latest", 1);
+            el = $("<div></div>").addClass("message").addClass("latest");
+            el.append($("<h2></h2>").text(data.signal));
             console.dir(data);
+            el.append($("<p></p>").text(data.detail.now[5]));
+            $("#viewport").prepend(el);
         }
         
         ws.onopen = function(evt) {
@@ -33,5 +41,6 @@
 </head>
 <body>
   <h1>MHub Console</h1>
+  <div id="viewport"></div>
 </body>
 </html>

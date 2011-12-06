@@ -1,3 +1,24 @@
 body {
     font-family: "Arial", "Verdana", "Trebuchet MS", "Helvetica";
 }
+
+#viewport {
+    overflow: hidden;
+    width: 100%;
+    height: 85%;
+}
+
+#viewport .message.latest h2 {
+    font-size: 300%;
+    font-weight: bold;
+    color: darkblue;
+}
+
+#viewport .message h2 {
+    line-height: 60%;
+    color: #999;
+}
+
+#viewport .message p {
+    line-height: 100%;
+}
