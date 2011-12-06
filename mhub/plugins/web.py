@@ -4,11 +4,13 @@ import os
 from twisted.internet import reactor
 from twisted.internet.protocol import Protocol, Factory
 from twisted.web import static as Static, server, twcgi, script, vhost
+from lib.websocket import WebSocketHandler, WebSocketSite
 from twisted.web.resource import Resource
 from twisted.web.wsgi import WSGIResource
 from flask import Flask, g, request, render_template
 
 from base import BasePlugin
+
 
 
 class WebPlugin(BasePlugin):
@@ -54,8 +56,11 @@ class WebPlugin(BasePlugin):
         root = Root(self)
         root.putChild("static", static)
 
+        site = WebSocketSite(root)
+        site.addHandler("/ws", TestHandler)
+
         self.service.reactor.listenTCP(self.cfg.get("port", 9002),
-                                       server.Site(root))
+                                       site)
 
 
 
@@ -87,3 +92,21 @@ class Root(Resource):
 
     def render(self, request):
         return self.wsgi.render(request)
+
+
+class TestHandler(WebSocketHandler):
+
+    def __init__(self, transport):
+        WebSocketHandler.__init__(self, transport)
+
+    def __del__(self):
+        print 'Deleting handler'
+
+    def send_time(self):
+        # send current time as an ISO8601 string
+        data = datetime.utcnow().isoformat().encode('utf8')
+        self.transport.write(data)
+
+    def frameReceived(self, frame):
+        print 'Peer: ', self.transport.getPeer()
+        self.transport.write(frame)

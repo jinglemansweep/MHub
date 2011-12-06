@@ -13,3 +13,4 @@ sphinx
 twittytwister
 oauth
 flask
+https://github.com/rlotun/txWebSocket/zipball/master
