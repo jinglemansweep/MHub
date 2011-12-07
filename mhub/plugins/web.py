@@ -74,6 +74,11 @@ class WebPlugin(BasePlugin):
             ctx = self.context_processor()
             return render_template("console.html", **ctx)
 
+        @self.app.route("/admin")
+        def admin():
+            ctx = self.context_processor()
+            return render_template("admin.html", **ctx)
+
 
     def context_processor(self):
 

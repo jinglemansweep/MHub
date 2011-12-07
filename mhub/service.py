@@ -42,6 +42,7 @@ class BaseService(Service):
         self.logger = logging.getLogger("mhub.service")
         self.cfg = cfg
         self.plugins = dict()
+        self.metadata = dict()
 
 
     def setup(self):

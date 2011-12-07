@@ -85,12 +85,17 @@ class MHubApp(object):
 
         self.logger.info("Registering plugins")
 
+        self.service.metadata["plugins"] = dict()
+
         plugins_cfg = self.cfg.get("plugins")
 
         for name, plugin_cfg in plugins_cfg.iteritems():
             p_cls_str = plugin_cfg.get("class")
             p_cls = self._class_map.get(p_cls_str)
-            if not plugin_cfg.get("enabled", False): continue
+            p_enabled = plugin_cfg.get("enabled", False)
+            self.service.metadata["plugins"][name] = dict(enabled=p_enabled,
+                                                          cfg=plugin_cfg)
+            if not p_enabled: continue
             p_inst = p_cls(name=name,
                            cls=p_cls_str,
                            service=self.service,
