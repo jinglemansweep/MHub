@@ -82,8 +82,7 @@ class ByeByeStandbyProtocol(DatagramProtocol):
         :type data: str.
         """
 
-        self.logger.debug(data)
-        #self.plugin.publish_event("input", dict(data=data))
+        self.plugin.publish_event("input", dict(data=data))
 
 
 
