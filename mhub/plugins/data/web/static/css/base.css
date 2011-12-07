@@ -3,10 +3,38 @@ body#admin {
 }
 
 body#admin #event-console {
-    height: 200px;
+    height: 150px;
     overflow: auto;
     padding: 5px;
     border: 1px solid silver;
     margin-bottom: 1em;
+}
+
+body#admin #event-console .event-console-entry {
+    margin-bottom: 1em;
+}
+
+body#admin #event-console .event-console-entry h2 {
+    font-size: 10pt;
+    font-weight: bold;
+    color: #333;
+    padding: 0;
+    margin: 0 0 0.5em 0;
+    line-height: 1em;
+}
+
+
+
+body#admin #event-console .event-console-entry p.meta {
+    padding: 0;
+    margin: 0 0 0.5em 0;
+    line-height: 1em;
+}
+
+body#admin #event-console .event-console-entry p.detail {
     font-family: "Courier New", "Monospace";
+    color: #aaa;
+    padding: 0;
+    margin: 0;
+    line-height: 1em;
 }
