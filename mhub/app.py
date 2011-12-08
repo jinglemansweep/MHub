@@ -15,18 +15,19 @@ import logging
 
 from twisted.application.service import MultiService, Application
 from twisted.internet import reactor
-
 from service import MHubService
+
 from plugins.amqp import AmqpPlugin
 from plugins.byebyestandby import ByeByeStandbyPlugin
-from plugins.xmpp import XmppPlugin
+from plugins.echo import EchoPlugin
+from plugins.latitude import LatitudePlugin
+from plugins.mpd_client import MpdPlugin
 from plugins.scheduler import SchedulerPlugin
 from plugins.scripting import ScriptingPlugin
-from plugins.echo import EchoPlugin
-from plugins.mpd_client import MpdPlugin
 from plugins.telnet import TelnetPlugin
 from plugins.twitter_client import TwitterPlugin
 from plugins.web import WebPlugin
+from plugins.xmpp import XmppPlugin
 
 
 class MHubApp(object):
@@ -40,15 +41,16 @@ class MHubApp(object):
 
     _class_map = {
         "amqp": AmqpPlugin,
-        "xmpp": XmppPlugin,
+        "byebyestandby": ByeByeStandbyPlugin,
+        "echo": EchoPlugin,
+        "latitude": LatitudePlugin,
         "mpd": MpdPlugin,
         "scheduler": SchedulerPlugin,
         "scripting": ScriptingPlugin,
-        "echo": EchoPlugin,
         "telnet": TelnetPlugin,
         "twitter": TwitterPlugin,
-        "byebyestandby": ByeByeStandbyPlugin,
-        "web": WebPlugin
+        "web": WebPlugin,
+        "xmpp": XmppPlugin
     }
 
     def __init__(self, cfg=None):
@@ -90,7 +92,7 @@ class MHubApp(object):
         plugins_cfg = self.cfg.get("plugins")
 
         for name, plugin_cfg in plugins_cfg.iteritems():
-            p_cls_str = plugin_cfg.get("class")
+            p_cls_str = plugin_cfg.get("class").lower()
             p_cls = self._class_map.get(p_cls_str)
             p_enabled = plugin_cfg.get("enabled", False)
             self.service.metadata["plugins"][name] = dict(enabled=p_enabled,
