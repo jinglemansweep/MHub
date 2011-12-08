@@ -5,12 +5,15 @@ function setup_event_websocket(url) {
         ws = new Socket("ws://" + url);
  
     ws.onmessage = function(evt) {
-        var data = JSON.parse(evt.data), el, header, meta, detail;
+        var data = JSON.parse(evt.data), 
+            el, header, signal, name, meta, detail;
         el = $("<div></div>").addClass("event-console-entry");
-        header = $("<h2></h2>").text(data.signal);
-        meta = $("<p></p>").addClass("meta").text(data.sender);
+        header = $("<p></p>").addClass("header");
+        signal = $("<span></span>").addClass("signal").text(data.signal);
+        sender = $("<span></span>").addClass("sender").text(data.sender);
+        header.append(signal).append(sender);
         detail = $("<p></p>").addClass("detail").text(JSON.stringify(data.detail));
-        el.append(header).append(meta).append(detail);
+        el.append(header).append(detail);
         $("#event-console").prepend(el);
     }
         

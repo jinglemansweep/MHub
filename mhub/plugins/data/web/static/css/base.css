@@ -14,21 +14,20 @@ body#admin #event-console .event-console-entry {
     margin-bottom: 1em;
 }
 
-body#admin #event-console .event-console-entry h2 {
+body#admin #event-console .event-console-entry span.signal {
     font-size: 10pt;
     font-weight: bold;
     color: #333;
     padding: 0;
-    margin: 0 0 0.5em 0;
+    margin: 0 0.5em 0.5em 0;
+    padding-right: 0.2em;
     line-height: 1em;
 }
 
-
-
-body#admin #event-console .event-console-entry p.meta {
-    padding: 0;
-    margin: 0 0 0.5em 0;
-    line-height: 1em;
+body#admin #event-console .event-console-entry span.sender {
+    font-size: 10pt;
+    font-style: italic;
+    color: #666;
 }
 
 body#admin #event-console .event-console-entry p.detail {
