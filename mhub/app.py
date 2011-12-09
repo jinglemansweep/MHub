@@ -20,6 +20,8 @@ from service import MHubService
 from plugins.amqp import AmqpPlugin
 from plugins.byebyestandby import ByeByeStandbyPlugin
 from plugins.echo import EchoPlugin
+from plugins.email import EmailPlugin
+from plugins.http import HttpPlugin
 from plugins.latitude import LatitudePlugin
 from plugins.mpd_client import MpdPlugin
 from plugins.scheduler import SchedulerPlugin
@@ -43,6 +45,8 @@ class MHubApp(object):
         "amqp": AmqpPlugin,
         "byebyestandby": ByeByeStandbyPlugin,
         "echo": EchoPlugin,
+        "email": EmailPlugin,
+        "http": HttpPlugin,
         "latitude": LatitudePlugin,
         "mpd": MpdPlugin,
         "scheduler": SchedulerPlugin,

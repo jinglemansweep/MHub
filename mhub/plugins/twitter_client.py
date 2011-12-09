@@ -1,6 +1,7 @@
 import logging
 from oauth import oauth
 from twisted.internet import defer, task
+from twisted.internet.task import LoopingCall
 from twittytwister import twitter
 
 
@@ -44,20 +45,34 @@ class TwitterPlugin(BasePlugin):
 
         self.tw = twitter.Twitter(consumer=self.consumer,
                                   token=self.token)
-        
-        self.d = self.tw.user_timeline(self.got_tweet,
-                                       self.timeline)
 
+        poll_task = LoopingCall(self.poll_tweets)
+        poll_task.start(self.cfg.get("poll_interval", 60))
+
+        self.store_del("tweet_ids")        
+
+
+    def poll_tweets(self):
+        
+        self.tw.user_timeline(self.got_tweet,
+                              self.timeline)
 
 
     def got_tweet(self, msg):
 
+        tweets = self.store_get("tweet_ids", list())
 
-        self.publish_event("new_tweet", {
-            "id": msg.id,
-            "body": msg.text,
-            "source": msg.source,
-            "geo": msg.geo,
-            "created_at": msg.created_at
-        })
+        if msg.id not in tweets:
+        
+            tweets.append(msg.id)
+
+            self.publish_event("new_tweet", {
+                "id": msg.id,
+                "body": msg.text,
+                "source": msg.source,
+                "geo": msg.geo,
+                "created_at": msg.created_at
+            })
+
+        self.store_put("tweet_ids", tweets)
 

@@ -7,6 +7,7 @@ import pprint
 from twisted.internet.protocol import Protocol, Factory
 from twisted.internet.task import LoopingCall
 from twisted.application.internet import TCPServer
+from twisted.web.client import getPage
 
 from base import BasePlugin
 
@@ -34,51 +35,59 @@ class LatitudePlugin(BasePlugin):
 
         BasePlugin.__init__(self, name, cls, service, cfg)
 
-        self.feeds = self.cfg.get("feeds", dict())
+        self.feed = self.cfg.get("feed", None)
         self.zones = self.cfg.get("zones", dict())
         self.zone_state = dict()
         self.first_run = True
 
-        poll_task = LoopingCall(self.poll_feeds)
+        if self.feed is None:
+            self.logger.warn("No feed configured")
+            return
+
+        poll_task = LoopingCall(self.poll_feed)
         poll_task.start(self.cfg.get("poll_interval", 60))
 
+    
 
-    def poll_feeds(self):
+    def poll_feed(self):
+
+        getPage(self.feed).addCallbacks(callback=self.process_response,
+                                        errback=self.error_response)
+
+
+    def error_response(self, detail):
+
+        self.logger.debug("Cannot poll Latitude server: %s" % (detail))
+
+
+    def process_response(self, value):
 
         """ Polls Google Latitude JSON feeds """
 
-        for name, url in self.feeds.iteritems():
-            
-            self.logger.debug("Polling location for: %s" % (name))
-            req = urllib2.Request(url, None, {"Content-Type": "application/json"})
-            f = urllib2.urlopen(req)
-            res = f.read()
-            f.close()
-            try:
-                doc = json.loads(res)
-                features = doc.get("features")[0]
-                geo = features.get("geometry", dict())
-                props = features.get("properties", dict())
-                location = props.get("reverseGeocode", "")
-                accuracy = props.get("accuracyInMeters", 0)
-                timestamp = props.get("timeStamp")
-                geo_coords = geo.get("coordinates")
-                geo_type = geo.get("type").lower()
-                detail = {
-                    "feed": name,
-                    "coords": geo_coords,
-                    "type": geo_type,
-                    "accuracy": accuracy,
-                    "timestamp": timestamp,
-                    "location": location
-                }
-                self.apply_zones(name, geo_coords, location)
-                self.publish_event("location", detail)
-            except:
-                continue
+        try:
+            doc = json.loads(value)
+            features = doc.get("features")[0]
+            geo = features.get("geometry", dict())
+            props = features.get("properties", dict())
+            location = props.get("reverseGeocode", "")
+            accuracy = props.get("accuracyInMeters", 0)
+            timestamp = props.get("timeStamp")
+            geo_coords = geo.get("coordinates")
+            geo_type = geo.get("type").lower()
+            detail = {
+                "coords": geo_coords,
+                "type": geo_type,
+                "accuracy": accuracy,
+                "timestamp": timestamp,
+                "location": location
+            }
+            self.apply_zones(geo_coords, location)
+            self.publish_event("location", detail)
+        except Exception, e:
+            self.logger.debug("Cannot parse Latitude response")
 
 
-    def apply_zones(self, feed, geo_coords, location):
+    def apply_zones(self, geo_coords, location):
 
         """ Apply zone/perimeter checking """
 
@@ -93,8 +102,7 @@ class LatitudePlugin(BasePlugin):
             change_only = detail.get("change_only", True)
             zone_type = ""
 
-            if not name in self.zone_state: self.zone_state[name] = dict()
-            state = self.zone_state.get(name).get(feed, False)
+            state = self.zone_state.get(name, False)
 
             if radius > 0 and (latitude != 0.0 or longitude != 0.0):
 
@@ -116,11 +124,10 @@ class LatitudePlugin(BasePlugin):
                         inside = True
 
             changed = ((state != inside) or self.first_run)
-            self.zone_state[name][feed] = inside
+            self.zone_state[name] = inside
 
             if changed or not change_only:
-                zone_detail = dict(feed=feed,
-                                   zone=name, 
+                zone_detail = dict(zone=name, 
                                    zone_type=zone_type,
                                    inside=inside,
                                    outside=not inside,
