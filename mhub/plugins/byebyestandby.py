@@ -67,6 +67,8 @@ class ByeByeStandbyProtocol(DatagramProtocol):
     ByeByeStandby Twisted protocol
     """
 
+    ignored_data = ["Sent heartbeat", "Z:OK:E"]
+
     def __init__(self):
 
         self.logger = logging.getLogger("plugin.protocol")
@@ -82,9 +84,10 @@ class ByeByeStandbyProtocol(DatagramProtocol):
         :type data: str.
         """
 
+        for ignored in self.ignored_data:
+            if ignored in data: return
+        
         self.plugin.publish_event("input", dict(data=data))
-
-
 
 
 class ByeByeStandbyFactory(Factory):

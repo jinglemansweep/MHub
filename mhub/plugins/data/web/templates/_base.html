@@ -1,0 +1,84 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+  
+  <head> 
+    <meta charset="utf-8"> 
+    <title>{% block page_title %}MHub{% endblock %}</title> 
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/static/css/base.css" />
+    {% block css_include %}{% endblock %}
+    <script type="text/javascript" src="/static/js/jquery.js"></script>
+    {% block js_include %}{% endblock %}
+    <meta name="description" content=""> 
+    <meta name="author" content=""> 
+
+    <script>
+        $(document).ready(function () {
+            {% block js_ready %}
+            {% endblock %}
+        });
+    </script>
+
+  </head>
+  
+  <body id="{% block page_id %}page{% endblock %}">
+
+    {% block page_body %}
+
+    <div class="topbar"> 
+      <div class="topbar-inner"> 
+        <div class="container-fluid"> 
+          <a class="brand" href="#">{% block topbar_app %}MHub{% endblock %} {% block topbar_zone %}{% endblock %}</a> 
+          <ul class="nav"> 
+            {% block topbar_nav %}
+              <li class="active"><a href="#">Home</a></li>
+            {% endblock %} 
+          </ul> 
+          <p class="pull-right">{% block topbar_status %}Hello{% endblock %}</p> 
+        </div> 
+      </div> 
+    </div> 
+ 
+    <div class="container-fluid"> 
+      <div class="sidebar"> 
+        <div class="well">
+          {% block sidebar_menu %} 
+          <h5>Status</h5> 
+          <ul> 
+            <li><a href="#">Console</a></li> 
+          </ul>
+          <h5>Plugins</h5>
+          <ul>
+            <li><a href="#">Scripting</a></li>
+          </ul>
+          {% endblock %} 
+        </div> 
+      </div> 
+      <div class="content"> 
+
+        {% block content %}
+
+          <div class="row"> 
+            <div class="span12"> 
+              <h2>Events</h2> 
+              <div id="event-console">
+              </div>
+              <p><a class="btn" href="#">Clear</a></p> 
+            </div> 
+          </div> 
+
+        {% endblock %}
+ 
+        <footer> 
+          {% block footer %}
+            <p>Copyright &copy; 2011 JingleManSweep.</p> 
+          {% endblock %}
+        </footer> 
+
+      </div> 
+    </div> 
+
+    {% endblock %}
+
+  </body>
+</html>

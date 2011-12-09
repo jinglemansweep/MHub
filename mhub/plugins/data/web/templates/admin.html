@@ -1,74 +1,30 @@
-<!DOCTYPE html> 
-<html lang="en"> 
-  
-  <head> 
-    <meta charset="utf-8"> 
-    <title>MHub Administration</title> 
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="/static/css/base.css" />
-    <script type="text/javascript" src="/static/js/jquery.js"></script>
-    <script type="text/javascript" src="/static/js/admin.js"></script>
-    <meta name="description" content=""> 
-    <meta name="author" content=""> 
+{% extends "_base.html" %}
 
-    <script>
-        $(document).ready(function () {
-            setup_event_websocket("{{ ws_url }}");
-        });
-    </script>
+{% block page_id %}admin{% endblock %}
+{% block page_title %}MHub Administration{% endblock %}
 
-  </head>
-  
-  <body id="admin">
+{% block js_include %}
+  <script type="text/javascript" src="/static/js/admin.js"></script>
+{% endblock %}
 
-    <div class="topbar"> 
-      <div class="topbar-inner"> 
-        <div class="container-fluid"> 
-          <a class="brand" href="#">MHub Administration</a> 
-          <ul class="nav"> 
-            <li class="active"><a href="#">Home</a></li> 
-            <li><a href="#about">About</a></li> 
-            <li><a href="#contact">Contact</a></li> 
-          </ul> 
-          <p class="pull-right">Logged in as <a href="#">username</a></p> 
-        </div> 
-      </div> 
-    </div> 
- 
-    <div class="container-fluid"> 
-      <div class="sidebar"> 
-        <div class="well"> 
-          <h5>Sidebar</h5> 
-          <ul> 
-            <li><a href="#">Link</a></li> 
-            <li><a href="#">Link</a></li> 
-            <li><a href="#">Link</a></li> 
-            <li><a href="#">Link</a></li> 
-          </ul> 
-          <h5>Sidebar</h5> 
-          <ul> 
-            <li><a href="#">Link</a></li> 
-            <li><a href="#">Link</a></li> 
-            <li><a href="#">Link</a></li> 
-            <li><a href="#">Link</a></li> 
-            <li><a href="#">Link</a></li> 
-            <li><a href="#">Link</a></li> 
-          </ul> 
-          <h5>Sidebar</h5> 
-          <ul> 
-            <li><a href="#">Link</a></li> 
-            <li><a href="#">Link</a></li> 
-          </ul> 
-        </div> 
-      </div> 
-      <div class="content"> 
-        <!--
-        <div class="hero-unit"> 
-          <h1>Hello, world!</h1> 
-          <p>Vestibulum id ligula porta felis euismod semper. Integer posuere erat a ante venenatis dapibus posuere velit aliquet. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit.</p> 
-          <p><a class="btn primary large">Learn more &raquo;</a></p> 
-        </div> 
-        -->
+{% block js_ready %}
+  setup_event_websocket("{{ ws_url }}");
+{% endblock %}
+
+{% block topbar_app %}{{ super() }}{% endblock %}
+{% block topbar_zone %}Administration{% endblock %}
+
+{% block topbar_nav %}
+  {{ super() }}
+{% endblock %}
+
+{% block topbar_status %}Wooo{% endblock %}
+
+{% block sidebar_menu %}
+  {{ super() }}
+{% endblock %}
+
+{% block content %}
 
         <div class="row"> 
           <div class="span12"> 
@@ -80,13 +36,10 @@
             <p><a class="btn" href="#">Clear</a></p> 
           </div> 
         </div> 
+
+{% endblock %}
+
+{% block footer %}
+  {{ super() }}
+{% endblock %}
  
-        <footer> 
-          <p>Copyright &copy; 2011 JingleManSweep.</p> 
-        </footer> 
-
-      </div> 
-    </div> 
-
-  </body>
-</html>
