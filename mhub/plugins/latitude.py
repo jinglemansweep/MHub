@@ -59,57 +59,74 @@ class LatitudePlugin(BasePlugin):
                 features = doc.get("features")[0]
                 geo = features.get("geometry", dict())
                 props = features.get("properties", dict())
+                location = props.get("reverseGeocode", "")
+                accuracy = props.get("accuracyInMeters", 0)
+                timestamp = props.get("timeStamp")
                 geo_coords = geo.get("coordinates")
                 geo_type = geo.get("type").lower()
                 detail = {
                     "feed": name,
                     "coords": geo_coords,
                     "type": geo_type,
-                    "accuracy": props.get("accuracyInMeters"),
-                    "timestamp": props.get("timeStamp"),
-                    "location": props.get("reverseGeocode")
+                    "accuracy": accuracy,
+                    "timestamp": timestamp,
+                    "location": location
                 }
-                self.apply_zones(name, geo_coords)
+                self.apply_zones(name, geo_coords, location)
                 self.publish_event("location", detail)
             except:
                 continue
 
 
-    def apply_zones(self, feed, latlong):
+    def apply_zones(self, feed, geo_coords, location):
 
         """ Apply zone/perimeter checking """
 
-        lng_cur, lat_cur = latlong
+        lng_cur, lat_cur = geo_coords
 
         for name, detail in self.zones.iteritems():
 
             latitude = float(detail.get("latitude", 0.0))
             longitude = float(detail.get("longitude", 0.0))
             radius = float(detail.get("radius", 1.0))
+            locations = detail.get("locations", list())
+            change_only = detail.get("change_only", True)
+            zone_type = ""
 
-            if latitude == 0.0 and longitude == 0.0: continue
-
-            lng_min = longitude - radius / abs(math.cos(math.radians(latitude)) * 69)
-            lng_max = longitude + radius / abs(math.cos(math.radians(latitude)) * 69)
-            lat_min = latitude - (radius / 69)
-            lat_max = latitude + (radius / 69)
-
-            # print radius
-            # print lat_min, lat_cur, lat_max
-            # print lng_min, lng_cur, lng_max
-          
             if not name in self.zone_state: self.zone_state[name] = dict()
-           
-            cur_state = self.zone_state.get(name).get(feed, False)
-            inside = ((lat_min < lat_cur < lat_max) and (lng_min < lng_cur < lng_max))
-  
-            changed = ((cur_state != inside) or self.first_run)
+            state = self.zone_state.get(name).get(feed, False)
+
+            if radius > 0 and (latitude != 0.0 or longitude != 0.0):
+
+                zone_type = "latitude_longitude"
+                lng_min = longitude - radius / abs(math.cos(math.radians(latitude)) * 69)
+                lng_max = longitude + radius / abs(math.cos(math.radians(latitude)) * 69)
+                lat_min = latitude - (radius / 69)
+                lat_max = latitude + (radius / 69)
+
+                inside = ((lat_min < lat_cur < lat_max) and (lng_min < lng_cur < lng_max))
+ 
+            elif len(locations):
+
+                zone_type = "reverse_geocode"
+                inside = False
+                
+                for loc in locations:
+                    if loc.lower() in location.lower():
+                        inside = True
+
+            changed = ((state != inside) or self.first_run)
             self.zone_state[name][feed] = inside
 
-            if changed:
-                zone_detail = dict(feed=feed, zone=name, inside=inside, outside=not inside)
+            if changed or not change_only:
+                zone_detail = dict(feed=feed,
+                                   zone=name, 
+                                   zone_type=zone_type,
+                                   inside=inside,
+                                   outside=not inside,
+                                   changed=changed)
                 self.publish_event("zone", zone_detail)
 
-        self.first_run = False
+            self.first_run = False
         
         
