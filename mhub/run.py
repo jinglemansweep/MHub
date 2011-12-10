@@ -40,5 +40,4 @@ logger = logging.getLogger("cli")
 # Services
 
 container = MHubApp(cfg)
-container.initialise()
 application = container.get_application()

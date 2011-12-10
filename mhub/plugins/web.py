@@ -9,7 +9,7 @@ from twisted.web import static as Static, server, twcgi, script, vhost
 from lib.websocket import WebSocketHandler, WebSocketSite
 from twisted.web.resource import Resource
 from twisted.web.wsgi import WSGIResource
-from flask import Flask, g, request, render_template
+from flask import Flask, g, request, render_template, redirect
 
 from base import BasePlugin
 
@@ -19,23 +19,17 @@ class WebPlugin(BasePlugin):
 
     """
     Simple Web plugin.
-
-    :param name: Name of plugin.
-    :type name: str.
-    :param cls: Class/type of plugin.
-    :type cls: str.
-    :param service: Container service.
-    :type service: mhub.service.
-    :param cfg: Plugin configuration dictionary.
-    :type cfg: dict.
     """
 
+    default_config = {
+        "enabled": False,
+        "port": 9002
+    }
 
-    def __init__(self, name, cls, service, cfg):
 
-        """ Constructor """
+    def setup(self, cfg):
 
-        BasePlugin.__init__(self, name, cls, service, cfg)
+        BasePlugin.setup(self, cfg)
 
         self.data_root = os.path.join(os.path.dirname(__file__),
                                      "data",
@@ -60,7 +54,7 @@ class WebPlugin(BasePlugin):
         site = WebSocketSite(root)
         site.addHandler("/ws", WebSocketProtocol)
 
-        self.service.reactor.listenTCP(self.cfg.get("port", 9002),
+        self.service.reactor.listenTCP(self.cfg.get("port", 8901),
                                        site)
 
 
@@ -68,6 +62,11 @@ class WebPlugin(BasePlugin):
         def index():
             ctx = self.context_processor()
             return render_template("index.html", **ctx)
+
+        @self.app.route("/reconfigure")
+        def reconfigure():
+            self.publish_event("app.reconfigure", )
+            return redirect("/")
 
         @self.app.route("/console")
         def console():
@@ -85,12 +84,13 @@ class WebPlugin(BasePlugin):
         """ Default template context processor """
 
         ws_host = self.cfg.get("ws_host", "localhost")
-        ws_port = self.cfg.get("ws_port", self.cfg.get("port", 8001))
+        ws_port = self.cfg.get("ws_port", self.cfg.get("port", 8901))
         ws_path = self.cfg.get("ws_path", "ws")
 
         ctx = {
             "ws_url": "%s:%s/%s" % (ws_host, ws_port, ws_path)
         }
+        
 
         return ctx
 
@@ -166,14 +166,16 @@ class WebSocketProtocol(WebSocketHandler):
 
         print 'Lost connection.'
 
-    def process_event(self, detail, signal, sender, cls):
+    def process_event(self, signal, sender, cls, detail=None):
 
         """ Event publisher helper """
 
         msg = dict(signal=signal,
-                   sender=sender,
-                   cls=cls,
-                   detail=detail)
+                   sender=str(sender),
+                   cls=cls)
+
+        if detail is not None:
+            msg["detail"] = detail
 
         self.transport.write(json.dumps(msg))
 

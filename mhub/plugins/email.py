@@ -18,32 +18,16 @@ class EmailPlugin(BasePlugin):
     IMAP Email Plugin
     """
 
-    def __init__(self, name, cls, service, cfg):
+    default_config = {
+        "enabled": False
+    }
 
-        """ 
-        Constructor 
+    def setup(self, cfg):
 
-        :param name: Name of plugin.
-        :type name: str.
-        :param cls: Class/type of plugin.
-        :type cls: str.
-        :param service: Container service.
-        :type service: mhub.service.
-        :param cfg: Plugin configuration dictionary.
-        :type cfg: dict.
-        """
-
-        BasePlugin.__init__(self, name, cls, service, cfg)
+        BasePlugin.setup(self, cfg)
 
         self.account = self.cfg.get("account", dict())
 
-        
-        # if self.feed is None:
-        #     self.logger.warn("No feed configured")
-        #     return
-
-        # poll_task = LoopingCall(self.poll_feed)
-        # poll_task.start(self.cfg.get("poll_interval", 60))
 
     
 

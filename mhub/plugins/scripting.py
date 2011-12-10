@@ -8,25 +8,25 @@ class ScriptingPlugin(BasePlugin):
 
     """
     High level JavaScript control plugin.
-
-    :param name: Name of plugin.
-    :type name: str.
-    :param cls: Class/type of plugin.
-    :type cls: str.
-    :param service: Container service.
-    :type service: mhub.service.
-    :param cfg: Plugin configuration dictionary.
-    :type cfg: dict.
     """
 
-    def __init__(self, name, cls, service, cfg):
+    default_config = {
+        "enabled": False,
+        "reload_interval": 300,
+        "scripts": [
+            "test.js"
+        ]
+    }
+
+
+    def setup(self, cfg):
+
+        BasePlugin.setup(self, cfg)
 
         try:
             import spidermonkey
         except ImportError:
             return
-
-        BasePlugin.__init__(self, name, cls, service, cfg)
 
         self.jsrt = spidermonkey.Runtime()
         self.jsctx = self.jsrt.new_context()
@@ -40,10 +40,10 @@ class ScriptingPlugin(BasePlugin):
         
         self.load_scripts()
         
-        louie.connect(receiver=self.process_event)
+        louie.connect(self.process_event)
 
 
-    def process_event(self, detail, signal, sender):
+    def process_event(self, signal, sender, detail=None):
 
         """
         Service message process callback function.

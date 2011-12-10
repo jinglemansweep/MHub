@@ -4,40 +4,28 @@ import os
 import shelve
 import sys
 
+from pymongo import Connection
+
 
 class BasePlugin(object):
 
     """
     Plugin base class.
-
-    :param name: Name of plugin.
-    :type name: str.
-    :param cls: Class/type of plugin.
-    :type cls: str.
-    :param service: Container service.
-    :type service: mhub.service.
-    :param cfg: Plugin configuration dictionary.
-    :type cfg: dict.
     """
 
-    def __init__(self, name, cls, service, cfg):
-
-        self.name = name
-        self.cls = cls or "plugin"
-        self.service = service
-        self.cfg = cfg
-        self.logger = logging.getLogger("plugin")
-
-        self.setup()
-
-
-    def setup(self):
+    def setup(self, cfg):
 
         """
         Setup plugin.
         """
 
-        cache_dir = self.service.cfg.get("app").get("general").get("cache_dir")
+        self.cfg = cfg or dict()
+        self.cfg["_id"] = "plugin.%s.!config" % (self.name)
+
+        app_cfg = self.service.cfg.get("app")
+        cache_dir = app_cfg.get("general").get("cache_dir")
+        mongo_server = app_cfg.get("general").get("mongo_server", "localhost")
+        mongo_port = app_cfg.get("general").get("mongo_port", 27017)
 
         plugin_cache_dir = os.path.join(cache_dir, "plugins", self.cls, self.name)
 
@@ -45,10 +33,12 @@ class BasePlugin(object):
             os.makedirs(plugin_cache_dir)
 
         self.cache_dir = plugin_cache_dir
-        self._datastore_filename = os.path.join(self.cache_dir, "storage.shelve")
+        self.state.save(self.cfg)
+
+        louie.connect(self.reconfigure, "app.reconfigure")
 
 
-    def publish_event(self, event_name, detail):
+    def publish_event(self, event_name, detail=None, send_as=None):
 
         """
         Publish (send) event to service.
@@ -60,67 +50,59 @@ class BasePlugin(object):
         """
 
         self.logger.info("Published '%s' event (from '%s.%s')" % (event_name, self.cls, self.name))
-        self.logger.debug(detail)
-    
-        louie.send(event_name,
-                   self.name,
-                   detail, 
-                   cls=self.cls) 
+        if detail is not None: self.logger.debug(detail)
+
+        kwargs = {
+            "signal": event_name,
+            "sender": send_as or self.name,
+            "cls": self.cls
+        }
+
+        if detail is not None:
+            kwargs["detail"] = detail
+
+        louie.send(**kwargs)
 
 
-    def store_put(self, key, value):
-
-        """
-        Persist a value in the datastore.
-
-        :param key: Name of key.
-        :type key: str.
-        :param value: Value to store.
-        """
-
-        full_key = self._store_key(key)
-
-        ds = shelve.open(self._datastore_filename)
-        ds[full_key] = value
-        ds.close()
-
-
-    def store_get(self, key, default=None):
+    def reconfigure(self):
 
         """
-        Retrieve a value from the datastore
-        
-        :param key: Name of key.
-        :type key: str.
-        :param default: Default value.
+        Retrieves plugins operating configuration
+
+        :param cfg: Configuration object.
         """
 
-        full_key = self._store_key(key)
-        ds = shelve.open(self._datastore_filename)
-        if ds.has_key(full_key):
-            return ds[full_key]
+        self.logger.debug("Reconfiguring plugin '%s'" % (self.name))
+        self.cfg = self.state_get("!config", self.default_config)
+
+
+    def state_get(self, key, default=None):
+
+        result = self.state.find_one({
+            "_id": self.state_key(key),
+        })
+
+        if default:
+            result["value"] = default
+            self.state.save(result)
+
+        if result:
+            return result.get("value", default)
         else:
             return default
-        ds.close()
 
 
-    def store_del(self, key):
 
-        """
-        Remove a value from the datastore
+
+    def state_save(self, key, value):
+
+        self.state.save({
+            "_id": self.state_key(key),
+            "value": value
+        })
+
         
-        :param key: Name of key.
-        :type key: str.
-        """
-
-        full_key = self._store_key(key)
-        ds = shelve.open(self._datastore_filename)
-        if ds.has_key(full_key):
-            del ds[full_key]
-        ds.close()
-
-
-    def _store_key(self, key):
+    def state_key(self, key):
 
         """
         Generates fully qualified plugin key
@@ -129,4 +111,4 @@ class BasePlugin(object):
         :type key: str.
         """
 
-        return "%s" % (key)
+        return "%s.%s.%s" % ("plugin", self.name, key)

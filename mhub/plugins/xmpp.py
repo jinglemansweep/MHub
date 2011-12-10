@@ -6,25 +6,25 @@ from wokkel.xmppim import MessageProtocol, AvailablePresence
 
 from base import BasePlugin
 
+
 class XmppPlugin(BasePlugin):
 
     """
     XMPP/Jabber (Google Talk) plugin.
-    
-    :param name: Name of plugin.
-    :type name: str.
-    :param cls: Class/type of plugin.
-    :type cls: str.
-    :param service: Container service.
-    :type service: mhub.service.
-    :param cfg: Plugin configuration dictionary.
-    :type cfg: dict.
     """
 
-    def __init__(self, name, cls, service, cfg):
+    default_config = {
+        "enabled": False,
+        "username": "user@gmail.com",
+        "password": "changeme",
+        "server": "talk.google.com",
+        "port": 5222
+    }
 
-        BasePlugin.__init__(self, name, cls, service, cfg)
+    def setup(self, cfg):
 
+        BasePlugin.setup(self, cfg)
+        
         self.client = XmppClient(self.cfg.get("username"),
                                  self.cfg.get("password"),
                                  self.cfg.get("server"),
