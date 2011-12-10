@@ -1,4 +1,6 @@
 import logging
+import sys
+
 from oauth import oauth
 from twisted.internet import defer, task
 from twisted.internet.task import LoopingCall
@@ -50,7 +52,7 @@ class TwitterPlugin(BasePlugin):
         poll_task = LoopingCall(self.poll_tweets)
         poll_task.start(self.cfg.get("poll_interval", 60))
 
-        self.state.remove({"_id": self.state_key("tweet_ids")})
+        # self.db_remove("tweet_ids")
 
 
     def poll_tweets(self):
@@ -63,10 +65,10 @@ class TwitterPlugin(BasePlugin):
 
     def got_tweet(self, msg):
 
-        tweet_ids = self.state_get("tweet_ids", list())
-        
+        tweet_ids = self.db_get(self.state, "tweet_ids", list())
+
         if msg.id not in tweet_ids:
-        
+
             tweet_ids.append(msg.id)
 
             self.publish_event("new_tweet", {
@@ -77,5 +79,5 @@ class TwitterPlugin(BasePlugin):
                 "created_at": msg.created_at
             })
 
-        self.state_save("tweet_ids", tweet_ids)
+        self.db_save(self.state, "tweet_ids", tweet_ids)
 

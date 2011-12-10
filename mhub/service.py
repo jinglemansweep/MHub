@@ -94,7 +94,8 @@ class BaseService(Service):
         ds_conn = Connection(store_host, store_port)
         ds_db = ds_conn["mhub"]
         self.state = ds_db["state"]
-        self.state.remove({})
+        self.store = ds_db["store"]
+        # self.state.remove({})
 
         self.state.save({
             "_id": "app.!config",
@@ -125,6 +126,7 @@ class BaseService(Service):
             p_inst.service = self
             p_inst.logger = logging.getLogger("plugin")
             p_inst.state = self.state
+            p_inst.store = self.store
             p_inst.setup(plugin_cfg)
 
             self.logger.debug("%s.%s registered" % (p_cls_str, name))

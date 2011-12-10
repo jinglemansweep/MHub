@@ -1,0 +1,25 @@
+{% extends "_base.html" %}
+
+{% block page_id %}admin{% endblock %}
+{% block page_title %}{{ super() }} &gt; Admin{% endblock %}
+
+{% block js_include %}
+  <script type="text/javascript" src="/static/js/admin.js"></script>
+{% endblock %}
+
+{% block js_ready %}
+  setup_event_websocket("{{ ws_url }}");
+{% endblock %}
+
+{% block topbar_zone %}Admin{% endblock %}
+
+{% block content %}
+
+  <div class="row">
+    <div class="span12">
+      <h2>Home</h2>
+   </div>
+  </div>
+
+{% endblock %}
+

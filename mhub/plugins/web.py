@@ -60,23 +60,17 @@ class WebPlugin(BasePlugin):
 
         @self.app.route("/")
         def index():
-            ctx = self.context_processor()
-            return render_template("index.html", **ctx)
+            return redirect("/admin")
 
         @self.app.route("/reconfigure")
         def reconfigure():
-            self.publish_event("app.reconfigure", )
+            self.publish_event("app.reconfigure")
             return redirect("/")
-
-        @self.app.route("/console")
-        def console():
-            ctx = self.context_processor()
-            return render_template("console.html", **ctx)
 
         @self.app.route("/admin")
         def admin():
             ctx = self.context_processor()
-            return render_template("admin.html", **ctx)
+            return render_template("admin/home.html", **ctx)
 
 
     def context_processor(self):

@@ -73,18 +73,18 @@ class BasePlugin(object):
         """
 
         self.logger.debug("Reconfiguring plugin '%s'" % (self.name))
-        self.cfg = self.state_get("!config", self.default_config)
+        self.cfg = self.db_get(self.state, "!config", self.default_config)
 
 
-    def state_get(self, key, default=None):
+    def db_get(self, coll, key, default=None):
 
-        result = self.state.find_one({
-            "_id": self.state_key(key),
+        result = coll.find_one({
+            "_id": self.db_key(key),
         })
 
         if default:
             result["value"] = default
-            self.state.save(result)
+            coll.save(result)
 
         if result:
             return result.get("value", default)
@@ -92,17 +92,26 @@ class BasePlugin(object):
             return default
 
 
+    def db_save(self, coll, key, value):
 
-
-    def state_save(self, key, value):
-
-        self.state.save({
-            "_id": self.state_key(key),
+        coll.save({
+            "_id": self.db_key(key),
             "value": value
         })
 
+
+    def db_remove(self, coll, key):
+
+        coll.remove({"_id": self.db_key(key)})
+
+
+    def get_resource(self, key):
+
+        return self.store.find_one("resource.%s" % (key))
+
+
         
-    def state_key(self, key):
+    def db_key(self, key):
 
         """
         Generates fully qualified plugin key
