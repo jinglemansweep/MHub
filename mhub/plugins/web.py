@@ -53,7 +53,7 @@ class WebPlugin(BasePlugin):
                              "index.htm"]
 
         root = Root(self)
-        root.putChild("%s/static", static)
+        root.putChild("%s/static" % (self.web_prefix), static)
 
         site = WebSocketSite(root)
         ws_path = "/%s/ws" % (self.web_prefix)
