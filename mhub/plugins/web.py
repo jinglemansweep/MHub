@@ -35,9 +35,8 @@ class WebPlugin(BasePlugin):
                                      "data",
                                      "web")
 
-        self.web_prefix = self.cfg.get("web_prefix", "")
-        if self.web_prefix.endswith("/"):
-            self.web_prefix = self.web_prefix[:-1]
+        self.web_prefix = self.cfg.get("web_prefix", "/")
+        if self.web_prefix[-1] == "/": self.web_prefix 
 
         self.app = Flask(__name__,
                          template_folder=os.path.join(self.data_root,
@@ -53,26 +52,25 @@ class WebPlugin(BasePlugin):
                              "index.htm"]
 
         root = Root(self)
-        root.putChild("%sstatic" % (self.web_prefix + "/"), static)
+        root.putChild("static", static)
 
         site = WebSocketSite(root)
-        ws_path = "/%s/ws" % (self.web_prefix)
-        site.addHandler(ws_path, WebSocketProtocol)
+        site.addHandler("%sws" % (self.web_prefix), WebSocketProtocol)
 
         self.service.reactor.listenTCP(self.cfg.get("port", 8901),
                                        site)
 
 
-        @self.app.route("/%s/" % (self.web_prefix))
+        @self.app.route("%s" % (web_prefix))
         def index():
-            return redirect("%s/admin" % (self.web_prefix))
+            return redirect("%sadmin" % (web_prefix))
 
-        @self.app.route("/%s/reconfigure" % (self.web_prefix))
+        @self.app.route("%sreconfigure" %)
         def reconfigure():
             self.publish_event("app.reconfigure")
-            return redirect("%s/" % (self.web_prefix))
+            return redirect("/")
 
-        @self.app.route("/%s/admin" % (self.web_prefix))
+        @self.app.route("/admin")
         def admin():
             ctx = self.context_processor()
             return render_template("admin/home.html", **ctx)
@@ -87,7 +85,6 @@ class WebPlugin(BasePlugin):
         ws_path = self.cfg.get("ws_path", "ws")
 
         ctx = {
-            "web_prefix": "%s" % (self.web_prefix),
             "ws_url": "%s:%s/%s" % (ws_host, ws_port, ws_path)
         }
         
