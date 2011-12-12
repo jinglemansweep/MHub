@@ -35,6 +35,10 @@ class WebPlugin(BasePlugin):
                                      "data",
                                      "web")
 
+        self.web_prefix = self.cfg.get("web_prefix", "")
+        if self.web_prefix.endswith("/"):
+            self.web_prefix = self.web_prefix[:-1]
+
         self.app = Flask(__name__,
                          template_folder=os.path.join(self.data_root,
                                                       "templates"))
@@ -52,22 +56,22 @@ class WebPlugin(BasePlugin):
         root.putChild("static", static)
 
         site = WebSocketSite(root)
-        site.addHandler("/ws", WebSocketProtocol)
+        site.addHandler("%s/ws" % (self.web_prefix), WebSocketProtocol)
 
         self.service.reactor.listenTCP(self.cfg.get("port", 8901),
                                        site)
 
 
-        @self.app.route("/")
+        @self.app.route("%s/" % (self.web_prefix))
         def index():
-            return redirect("/admin")
+            return redirect("%s/admin" % (self.web_prefix))
 
-        @self.app.route("/reconfigure")
+        @self.app.route("%s/reconfigure" % (self.web_prefix))
         def reconfigure():
             self.publish_event("app.reconfigure")
-            return redirect("/")
+            return redirect("%s/" % (self.web_prefix))
 
-        @self.app.route("/admin")
+        @self.app.route("%s/admin" % (self.web_prefix))
         def admin():
             ctx = self.context_processor()
             return render_template("admin/home.html", **ctx)
