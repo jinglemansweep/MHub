@@ -87,6 +87,7 @@ class WebPlugin(BasePlugin):
         ws_path = self.cfg.get("ws_path", "ws")
 
         ctx = {
+            "web_prefix": "%s" % (self.web_prefix),
             "ws_url": "%s:%s/%s" % (ws_host, ws_port, ws_path)
         }
         
