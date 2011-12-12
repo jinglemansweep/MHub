@@ -56,22 +56,23 @@ class WebPlugin(BasePlugin):
         root.putChild("static", static)
 
         site = WebSocketSite(root)
-        site.addHandler("%s/ws" % (self.web_prefix), WebSocketProtocol)
+        ws_path = "/%s/ws" % (self.web_prefix)
+        site.addHandler(ws_path, WebSocketProtocol)
 
         self.service.reactor.listenTCP(self.cfg.get("port", 8901),
                                        site)
 
 
-        @self.app.route("%s/" % (self.web_prefix))
+        @self.app.route("/%s/" % (self.web_prefix))
         def index():
             return redirect("%s/admin" % (self.web_prefix))
 
-        @self.app.route("%s/reconfigure" % (self.web_prefix))
+        @self.app.route("/%s/reconfigure" % (self.web_prefix))
         def reconfigure():
             self.publish_event("app.reconfigure")
             return redirect("%s/" % (self.web_prefix))
 
-        @self.app.route("%s/admin" % (self.web_prefix))
+        @self.app.route("/%s/admin" % (self.web_prefix))
         def admin():
             ctx = self.context_processor()
             return render_template("admin/home.html", **ctx)
