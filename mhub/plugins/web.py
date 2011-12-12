@@ -52,7 +52,7 @@ class WebPlugin(BasePlugin):
         root.putChild("static", static)
 
         site = WebSocketSite(root)
-        site.addHandler("/ws/", WebSocketProtocol)
+        site.addHandler("/ws", WebSocketProtocol)
 
         self.service.reactor.listenTCP(self.cfg.get("port", 8901),
                                        site)
@@ -71,6 +71,11 @@ class WebPlugin(BasePlugin):
         def admin():
             ctx = self.context_processor()
             return render_template("admin/home.html", **ctx)
+
+        @self.app.route("/admin/resources/")
+        def admin_resources():
+            ctx = self.context_processor()
+            return render_template("admin/resources.html", **ctx)
 
 
     def context_processor(self):

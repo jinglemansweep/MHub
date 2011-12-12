@@ -1,6 +1,6 @@
 import louie
 import os
-
+import spidermonkey
 
 from base import BasePlugin
 
@@ -13,8 +13,8 @@ class ScriptingPlugin(BasePlugin):
     default_config = {
         "enabled": False,
         "reload_interval": 300,
-        "scripts": [
-            "test.js"
+        "resource_class": [
+            "plugin.scripting"
         ]
     }
 
@@ -22,11 +22,6 @@ class ScriptingPlugin(BasePlugin):
     def setup(self, cfg):
 
         BasePlugin.setup(self, cfg)
-
-        try:
-            import spidermonkey
-        except ImportError:
-            return
 
         self.jsrt = spidermonkey.Runtime()
         self.jsctx = self.jsrt.new_context()
@@ -43,7 +38,7 @@ class ScriptingPlugin(BasePlugin):
         louie.connect(self.process_event)
 
 
-    def process_event(self, signal, sender, detail=None):
+    def process_event(self, detail, signal, sender, cls):
 
         """
         Service message process callback function.
@@ -59,13 +54,14 @@ class ScriptingPlugin(BasePlugin):
         self.jsctx.add_global("env", self.env)
         self.jsctx.add_global("event", event)
 
-        for filename, body in self.scripts.iteritems():
+        for rid, body in self.scripts.iteritems():
+            print body
             try:
                 self.jsctx.execute(body)
             except:
-                self.invalid_scripts.add(filename)
+                self.invalid_scripts.add(rid)
             try:
-                self.invalid_scripts.remove(filename)
+                self.invalid_scripts.remove(rid)
             except KeyError, e:
                 pass
             self.env = self.jsctx.execute("env;")
@@ -79,21 +75,18 @@ class ScriptingPlugin(BasePlugin):
         """
 
         reload_interval = self.cfg.get("reload_interval", 60)
+        resource_cls = self.cfg.get("resource_class", "%s.%s" % ("plugin", self.cls))
 
-        scripts = self.cfg.get("scripts", list())
-        for path in scripts:
-            filename = os.path.expanduser(path)
-            if filename in self.invalid_scripts:
+        resources = self.get_resources(resource_cls)
+
+        for resource in resources:
+            resource_id = resource.get("_id")
+            if resource_id in self.invalid_scripts:
                 continue
-            if not os.path.exists(filename):
-                self.logger.debug("Script '%s' not found" % (filename))
-                continue
-            fh = open(filename, "r")
-            body = fh.read()
-            fh.close()
-            if body != self.scripts.get(filename, ""):
-                self.logger.debug("Loaded script '%s'" % (filename))
-                self.scripts[filename] = body
+            body = resource.get("body", "")
+            if body != self.scripts.get(resource_id, ""):
+                self.logger.debug("Loaded script '%s'" % (resource_id))
+                self.scripts[resource_id] = body
 
         self.service.reactor.callLater(reload_interval, self.load_scripts)
 
@@ -120,6 +113,8 @@ class ScriptingPlugin(BasePlugin):
         :param detail: Detail dictionary.
         :type detail: dict.
         """
+
+        if detail is None: detail = dict()
 
         name = self.js_to_python(name)
         detail = self.js_to_python(detail)
@@ -160,8 +155,7 @@ class ScriptingPlugin(BasePlugin):
             return ''.join(['[', ','.join(data), ']'])
         # string / unicode
         elif obj_type == unicode or obj_type == str:
-            obj = obj.replace('"', '\\"').replace('\n', '\\n') \
-                .replace('\r', '\\r').replace('\t', '\\t')
+            obj = obj.replace('"', '\\"').replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
             return ''.join(['"', obj, '"'])
         # everything else
         else:

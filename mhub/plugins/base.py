@@ -107,8 +107,12 @@ class BasePlugin(object):
 
     def get_resource(self, key):
 
-        return self.store.find_one("resource.%s" % (key))
+        return self.store.find_one({"type": "resource", "_id": "resource.%s" % (key)})
 
+
+    def get_resources(self, cls):
+
+        return list(self.store.find({"type": "resource", "class": cls}))
 
         
     def db_key(self, key):
