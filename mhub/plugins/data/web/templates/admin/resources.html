@@ -1,0 +1,25 @@
+{% extends "admin/_admin.html" %}
+
+{% block page_title %}{{ super() }} &gt; Home{% endblock %}
+
+{% block content %}
+
+        <div class="row"> 
+          <div class="span12"> 
+            <h2>Resources</h2>
+            <form class="form-stacked">
+                <div class="clearfix"></div>
+                <label for="id">ID</label>
+                <input type="text" id="id" name="id"></input>
+                <label for="class">Class</label>
+                <input type="text" id="class" name="class"></input>
+                <label for="content_type">Content Type</label>
+                <input type="text" id="content_type" name="content_type"></input>
+                <label for="body">Body</label>
+                <textarea id="body" name="body" class="xxlarge" rows="10" cols="160"></textarea>
+            </form>
+          </div> 
+        </div> 
+
+{% endblock %}
+
