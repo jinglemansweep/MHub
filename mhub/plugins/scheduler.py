@@ -64,7 +64,7 @@ class SchedulerPlugin(BasePlugin):
             env["datetime"][interval] = current
             if new_interval:
                 if interval in publish_intervals:
-                    self.publish_event("new_interval", {
+                    self.publish_event("new_interval", detail={
                         "interval": interval,
                         "now": [getattr(dt, i) for i in self.intervals]
                     })

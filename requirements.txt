@@ -2,5 +2,5 @@ Twisted
 txamqp
 pyyaml
 wokkel
-louie
 http://www.freedesktop.org/~lanius/pyxdg-0.18.tar.gz
+pymongo

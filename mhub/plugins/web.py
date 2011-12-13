@@ -1,6 +1,5 @@
 import json
 import logging
-import louie
 import os
 from twisted.internet import reactor
 from twisted.internet.protocol import Protocol, Factory
@@ -60,17 +59,22 @@ class WebPlugin(BasePlugin):
 
         @self.app.route("/")
         def index():
-            return redirect("/admin")
+            return redirect("/admin/" % (web_prefix))
 
-        @self.app.route("/reconfigure")
+        @self.app.route("/reconfigure/")
         def reconfigure():
             self.publish_event("app.reconfigure")
             return redirect("/")
 
-        @self.app.route("/admin")
+        @self.app.route("/admin/")
         def admin():
             ctx = self.context_processor()
             return render_template("admin/home.html", **ctx)
+
+        @self.app.route("/admin/resources/")
+        def admin_resources():
+            ctx = self.context_processor()
+            return render_template("admin/resources.html", **ctx)
 
 
     def context_processor(self):
@@ -152,7 +156,7 @@ class WebSocketProtocol(WebSocketHandler):
         """ Connection made helper """
 
         print 'Connected to client.'
-        louie.connect(self.process_event)
+        self.subscribe_event(None, None, self.process_event)
 
     def connectionLost(self, reason):
 

@@ -10,9 +10,12 @@ MHub Services Module
 
 """
 
+import fnmatch
 import json
 import logging
-import louie
+import pprint
+import sys
+
 from pymongo import Connection
 from twisted.application.service import Service
 from twisted.internet import reactor, threads
@@ -63,16 +66,19 @@ class BaseService(Service):
 
     def __init__(self,
                  cfg=None,
-                 reactor=None):
+                 reactor=None,
+                 app=None):
 
         """ Constructor """
 
         cfg = cfg or dict()
         self.reactor = reactor
+        self.app = app
         self.logger = logging.getLogger("mhub.service")
         self.cfg = cfg
         self.plugins = dict()
         self.metadata = dict()
+        self.subscriptions = list()
 
         self.setup_persistence()
         self.setup_plugins()
@@ -130,6 +136,48 @@ class BaseService(Service):
             p_inst.setup(plugin_cfg)
 
             self.logger.debug("%s.%s registered" % (p_cls_str, name))
+            
+            if hasattr(p_inst, "client"):
+                p_inst.client.setServiceParent(self.app.root_service)
+
+
+    def publish_event(self, signal, sender, detail, plugin):
+
+        """
+        Publish event to service
+        """
+
+        if sender is None: sender = "%s.%s" % (plugin.cls, plugin.name)
+        if detail is None: detail = dict()
+
+        match_count = 0
+
+        for sub in self.subscriptions:
+            if fnmatch.fnmatch(signal, sub.get("signal")):
+                if fnmatch.fnmatch(sender, sub.get("sender")):
+                    func = sub.get("func")
+                    func(sub.get("signal"), sub.get("sender"), detail)
+                    match_count += 1
+
+        self.logger.debug("Published event '%s' from '%s' to %i subscriptions" % (signal, sender, match_count))
+        self.logger.debug("Detail: %s" % (detail))
+
+
+    def subscribe_event(self, signal, sender, func, plugin=None):
+    
+        """
+        Create a subscription to a service event
+        """
+
+        if signal is not None:
+            if plugin is not None:
+                signal = "%s.%s.%s" % (plugin.cls, plugin.name, signal)
+        else:
+            signal = "*"
+        if sender is None: sender = "*"
+
+        self.logger.debug("Subscribed to event '%s' from '%s' using '%s'" % (signal, sender, func.__name__))
+        self.subscriptions.append(dict(signal=signal, sender=sender, func=func))
 
 
     # Twisted overrides

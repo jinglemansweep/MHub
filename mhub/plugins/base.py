@@ -1,7 +1,5 @@
 import logging
-import louie
 import os
-import shelve
 import sys
 
 from pymongo import Connection
@@ -35,33 +33,37 @@ class BasePlugin(object):
         self.cache_dir = plugin_cache_dir
         self.state.save(self.cfg)
 
-        louie.connect(self.reconfigure, "app.reconfigure")
+        self.service.subscribe_event("app.reconfigure", None, self.reconfigure)
 
 
-    def publish_event(self, event_name, detail=None, send_as=None):
+    def subscribe_event(self, signal, sender, func):
+
+        """
+        Create a subscription to an event
+
+        :param func: Callback function.
+        :type func: function.
+        :param signal: Event signal.
+        :param sender: Event sender.
+        """
+
+        self.service.subscribe_event(signal, sender, func, self)
+
+
+    def publish_event(self, signal, sender=None, detail=None):
 
         """
         Publish (send) event to service.
 
-        :param event_name: Name of event.
-        :type event_name: str.
+        :param signal: Name of signal.
+        :type signal: str.
+        :param sender: Name of sender.
+        :type signal: str
         :param detail: Detail dictionary.
         :type detail: dict.
         """
 
-        self.logger.info("Published '%s' event (from '%s.%s')" % (event_name, self.cls, self.name))
-        if detail is not None: self.logger.debug(detail)
-
-        kwargs = {
-            "signal": event_name,
-            "sender": send_as or self.name,
-            "cls": self.cls
-        }
-
-        if detail is not None:
-            kwargs["detail"] = detail
-
-        louie.send(**kwargs)
+        self.service.publish_event(signal, sender, detail, self)
 
 
     def reconfigure(self):
@@ -107,8 +109,12 @@ class BasePlugin(object):
 
     def get_resource(self, key):
 
-        return self.store.find_one("resource.%s" % (key))
+        return self.store.find_one({"type": "resource", "_id": "resource.%s" % (key)})
 
+
+    def get_resources(self, cls):
+
+        return list(self.store.find({"type": "resource", "class": cls}))
 
         
     def db_key(self, key):

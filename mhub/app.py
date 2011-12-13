@@ -43,7 +43,7 @@ class MHubApp(object):
 
         self.reactor = reactor
         self.root_service = MultiService()
-        self.service = MHubService(self.cfg, self.reactor)
+        self.service = MHubService(self.cfg, self.reactor, self)
         self.application = Application("mhub")
         self.root_service.setServiceParent(self.application)
 

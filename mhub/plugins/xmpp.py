@@ -1,6 +1,7 @@
 import logging
 
 from twisted.words.protocols.jabber import jid
+from twisted.words.xish import domish
 from wokkel.client import XMPPClient
 from wokkel.xmppim import MessageProtocol, AvailablePresence
 
@@ -43,6 +44,22 @@ class XmppFactory(MessageProtocol):
         self.plugin = plugin
         self.service = plugin.service
 
+        self.plugin.subscribe_event("send", None, self.send_message)
+
+
+    def send_message(self, signal, sender, detail):
+
+        """
+        reply = domish.Element((None, "message"))
+        reply["to"] = detail["from"]
+        reply["from"] = detail["to"]
+        reply["type"] = "chat"
+        reply.addElement("body", content="echo: " + str(detail.get("body")))
+        self.send(reply)
+        """            
+
+        self.logger.info("XMPP sent")
+
 
     def connectionMade(self):
         self.logger.debug("XMPP connected")
@@ -58,13 +75,14 @@ class XmppFactory(MessageProtocol):
             if e.name == "body":
                 body = unicode(e.__str__())
 
-        self.plugin.publish_event("receive", {
-            "to": msg["to"],
-            "from": msg["from"],
-            "type": msg["type"],
+        detail = {
+            "to": msg["to"], 
+            "from": msg["from"], 
+            "type": msg["type"], 
             "body": body
-        })
+        }
 
+        self.plugin.publish_event("receive", detail=detail)
 
 
 class XmppClient(XMPPClient):
