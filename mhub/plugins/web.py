@@ -156,7 +156,7 @@ class WebSocketProtocol(WebSocketHandler):
         """ Connection made helper """
 
         print 'Connected to client.'
-        self.subscribe_event(None, None, self.process_event)
+        self.subscribe(self.process_event)
 
     def connectionLost(self, reason):
 
@@ -164,7 +164,7 @@ class WebSocketProtocol(WebSocketHandler):
 
         print 'Lost connection.'
 
-    def process_event(self, signal, sender, cls, detail=None):
+    def process_event(self, detail):
 
         """ Event publisher helper """
 

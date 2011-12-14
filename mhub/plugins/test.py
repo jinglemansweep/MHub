@@ -4,10 +4,10 @@ from base import BasePlugin
 
 
 
-class EchoPlugin(BasePlugin):
+class TestPlugin(BasePlugin):
 
     """
-    Simple echo plugin.
+    Test plugin.
     """
 
     default_config = {
@@ -17,8 +17,8 @@ class EchoPlugin(BasePlugin):
     def setup(self, cfg):
 
         BasePlugin.setup(self, cfg)
-        self.subscribe(self.process_event)
-
+        self.subscribe(self.process_event, "*.*.new_interval")
+        self.subscribe(self.process_event, "scheduler.*.*")
 
     def process_event(self, signal, detail):
 
@@ -29,4 +29,4 @@ class EchoPlugin(BasePlugin):
         :type msg: dict.
         """
 
-        self.logger.debug("Echo: [%s] %s" % (signal, detail))
+        self.logger.debug("Test: [%s] %s" % (signal, detail))

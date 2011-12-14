@@ -24,7 +24,7 @@ class ScriptingPlugin(BasePlugin):
 
         self.jsrt = spidermonkey.Runtime()
         self.jsctx = self.jsrt.new_context()
-        self.jsctx.add_global("publish_event", self.js_publish_event)
+        self.jsctx.add_global("publish", self.js_publish)
         self.jsctx.add_global("log", self.js_log)
         self.jsctx.add_global("clear_env", self.js_clear_env)
 
@@ -34,10 +34,10 @@ class ScriptingPlugin(BasePlugin):
         
         self.load_scripts()
        
-        self.subscribe_event(None, None, self.process_event)
+        self.subscribe(self.process_event)
         
 
-    def process_event(self, detail, signal, sender, cls):
+    def process_event(self, signal, detail):
 
         """
         Service message process callback function.
@@ -46,15 +46,12 @@ class ScriptingPlugin(BasePlugin):
         :type msg: dict.
         """
 
-        event = dict(signal=signal,
-                     sender=sender,
-                     detail=detail)
+        event = dict(signal=signal, detail=detail)
 
         self.jsctx.add_global("env", self.env)
         self.jsctx.add_global("event", event)
 
         for rid, body in self.scripts.iteritems():
-            print body
             try:
                 self.jsctx.execute(body)
             except:
@@ -102,7 +99,7 @@ class ScriptingPlugin(BasePlugin):
         self.logger.info("JS: %s" % (msg))
 
 
-    def js_publish_event(self, name, detail=None):
+    def js_publish(self, signal, detail=None):
 
         """
         JavaScript event publishing wrapper function.
@@ -115,9 +112,9 @@ class ScriptingPlugin(BasePlugin):
 
         if detail is None: detail = dict()
 
-        name = self.js_to_python(name)
+        signal = self.js_to_python(signal)
         detail = self.js_to_python(detail)
-        self.publish_event(name, detail)
+        self.publish(signal, detail)
 
 
     def js_clear_env(self):

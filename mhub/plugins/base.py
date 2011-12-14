@@ -33,10 +33,10 @@ class BasePlugin(object):
         self.cache_dir = plugin_cache_dir
         self.state.save(self.cfg)
 
-        self.service.subscribe_event("app.reconfigure", None, self.reconfigure)
+        self.subscribe(self.reconfigure, "app.reconfigure")
 
 
-    def subscribe_event(self, signal, sender, func):
+    def subscribe(self, func, pattern=None):
 
         """
         Create a subscription to an event
@@ -47,10 +47,10 @@ class BasePlugin(object):
         :param sender: Event sender.
         """
 
-        self.service.subscribe_event(signal, sender, func, self)
+        self.service.subscribe(func, pattern)
 
 
-    def publish_event(self, signal, sender=None, detail=None):
+    def publish(self, signal, detail=None):
 
         """
         Publish (send) event to service.
@@ -63,7 +63,7 @@ class BasePlugin(object):
         :type detail: dict.
         """
 
-        self.service.publish_event(signal, sender, detail, self)
+        self.service.publish(signal, detail, self)
 
 
     def reconfigure(self):

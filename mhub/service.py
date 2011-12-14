@@ -30,6 +30,7 @@ from plugins.mpd_client import MpdPlugin
 from plugins.scheduler import SchedulerPlugin
 from plugins.scripting import ScriptingPlugin
 from plugins.telnet import TelnetPlugin
+from plugins.test import TestPlugin
 from plugins.twitter_client import TwitterPlugin
 from plugins.web import WebPlugin
 from plugins.xmpp import XmppPlugin
@@ -58,6 +59,7 @@ class BaseService(Service):
         "scheduler": SchedulerPlugin,
         "scripting": ScriptingPlugin,
         "telnet": TelnetPlugin,
+        "test": TestPlugin,
         "twitter": TwitterPlugin,
         "web": WebPlugin,
         "xmpp": XmppPlugin
@@ -129,7 +131,7 @@ class BaseService(Service):
             p_inst = p_cls()
             p_inst.name = name
             p_inst.cls = p_cls_str
-            p_inst.service = self
+            p_inst.service = p_inst.s = self
             p_inst.logger = logging.getLogger("plugin")
             p_inst.state = self.state
             p_inst.store = self.store
@@ -141,43 +143,42 @@ class BaseService(Service):
                 p_inst.client.setServiceParent(self.app.root_service)
 
 
-    def publish_event(self, signal, sender, detail, plugin):
+    def publish(self, signal, detail, plugin):
 
         """
         Publish event to service
         """
 
-        if sender is None: sender = "%s.%s" % (plugin.cls, plugin.name)
+        fq_signal = "%s.%s.%s" % (plugin.cls, plugin.name, signal)
         if detail is None: detail = dict()
 
         match_count = 0
 
         for sub in self.subscriptions:
-            if fnmatch.fnmatch(signal, sub.get("signal")):
-                if fnmatch.fnmatch(sender, sub.get("sender")):
-                    func = sub.get("func")
-                    func(sub.get("signal"), sub.get("sender"), detail)
-                    match_count += 1
+            if fnmatch.fnmatch(fq_signal, sub[1]):
+                func = sub[0]
+                try:
+                    func(fq_signal, detail)
+                except Exception, e:
+                    self.logger.debug("Cannot call callback '%s'" % (func.__name__))
 
-        self.logger.debug("Published event '%s' from '%s' to %i subscriptions" % (signal, sender, match_count))
+                match_count += 1
+
+        self.logger.debug("Published event '%s' (%i receivers)" % (fq_signal, match_count))
         self.logger.debug("Detail: %s" % (detail))
 
 
-    def subscribe_event(self, signal, sender, func, plugin=None):
+    def subscribe(self, func, pattern=None):
     
         """
-        Create a subscription to a service event
+        Create a subscription to a service event based on pattern matching
         """
 
-        if signal is not None:
-            if plugin is not None:
-                signal = "%s.%s.%s" % (plugin.cls, plugin.name, signal)
-        else:
-            signal = "*"
-        if sender is None: sender = "*"
+        if pattern is None:
+            pattern = "*"
 
-        self.logger.debug("Subscribed to event '%s' from '%s' using '%s'" % (signal, sender, func.__name__))
-        self.subscriptions.append(dict(signal=signal, sender=sender, func=func))
+        self.logger.debug("Subscribed pattern '%s' with '%s'" % (pattern, func.__name__))
+        self.subscriptions.append((func, pattern))
 
 
     # Twisted overrides
