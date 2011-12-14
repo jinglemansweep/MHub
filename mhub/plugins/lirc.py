@@ -7,7 +7,7 @@ from twisted.web.client import getPage
 from base import BasePlugin
 
 
-class HttpPlugin(BasePlugin):
+class Httwhipper
 
     """
     HTTP page downloader plugin.

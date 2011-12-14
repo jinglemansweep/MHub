@@ -60,7 +60,7 @@ class WebPlugin(BasePlugin):
 
         @self.app.route("/")
         def index():
-            return redirect("/admin/" % (web_prefix))
+            return redirect("/admin/")
 
         @self.app.route("/reconfigure/")
         def reconfigure():
