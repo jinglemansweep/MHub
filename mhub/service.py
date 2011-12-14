@@ -17,6 +17,7 @@ import pprint
 import sys
 
 from pymongo import Connection
+from pymongo.errors import AutoReconnect
 from twisted.application.service import Service
 from twisted.internet import reactor, threads
 
@@ -99,16 +100,22 @@ class BaseService(Service):
         store_host = app_cfg.get("general").get("store_host", "localhost")
         store_port = app_cfg.get("general").get("store_port", 27017)
 
-        ds_conn = Connection(store_host, store_port)
-        ds_db = ds_conn["mhub"]
-        self.state = ds_db["state"]
-        self.store = ds_db["store"]
-        # self.state.remove({})
+        try:
 
-        self.state.save({
-            "_id": "app.!config",
-            "value": app_cfg
-        })
+            ds_conn = Connection(store_host, store_port)
+            ds_db = ds_conn["mhub"]
+            self.state = ds_db["state"]
+            self.store = ds_db["store"]
+
+            self.state.save({
+                "_id": "app.!config",
+                "value": app_cfg
+            })
+
+        except AutoReconnect, e:
+            
+            self.logger.fatal("Exiting, cannot connect to MongoDB")
+            sys.exit(1)
 
 
     def setup_plugins(self):

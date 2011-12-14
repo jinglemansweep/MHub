@@ -44,10 +44,10 @@ class XmppFactory(MessageProtocol):
         self.plugin = plugin
         self.service = plugin.service
 
-        self.plugin.subscribe_event("send", None, self.send_message)
+        self.plugin.subscribe(self.send_message, "%s.%s.send" % (self.plugin.cls, self.plugin.name))
 
 
-    def send_message(self, signal, sender, detail):
+    def send_message(self, signal, detail):
 
         """
         reply = domish.Element((None, "message"))

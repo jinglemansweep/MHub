@@ -51,6 +51,7 @@ class WebPlugin(BasePlugin):
         root.putChild("static", static)
 
         site = WebSocketSite(root)
+        WebSocketProtocol.plugin = self
         site.addHandler("/ws", WebSocketProtocol)
 
         self.service.reactor.listenTCP(self.cfg.get("port", 8901),
@@ -156,7 +157,8 @@ class WebSocketProtocol(WebSocketHandler):
         """ Connection made helper """
 
         print 'Connected to client.'
-        self.subscribe(self.process_event)
+        self.plugin.subscribe(self.process_event)
+
 
     def connectionLost(self, reason):
 
@@ -164,16 +166,12 @@ class WebSocketProtocol(WebSocketHandler):
 
         print 'Lost connection.'
 
-    def process_event(self, detail):
+    def process_event(self, signal, detail):
 
         """ Event publisher helper """
 
         msg = dict(signal=signal,
-                   sender=str(sender),
-                   cls=cls)
-
-        if detail is not None:
-            msg["detail"] = detail
+                   detail=detail)
 
         self.transport.write(json.dumps(msg))
 
