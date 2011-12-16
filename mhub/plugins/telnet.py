@@ -52,7 +52,7 @@ class TelnetProtocol(Protocol):
             pass
 
         self.factory.plugin.publish(data)
-        #self.factory.plugin.publish_event("input", data)
+        #self.factory.plugin.publish("input", data)
 
 
 class TelnetFactory(Factory):

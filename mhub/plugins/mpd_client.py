@@ -37,7 +37,7 @@ class MpdPlugin(BasePlugin):
         :type result: dict.
         """
 
-        self.publish_event("status", result)
+        self.publish("status", result)
 
 
 

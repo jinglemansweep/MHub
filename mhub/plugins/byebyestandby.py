@@ -86,7 +86,7 @@ class ByeByeStandbyProtocol(DatagramProtocol):
         for ignored in self.ignored_data:
             if ignored in data: return
         
-        self.plugin.publish_event("input", dict(data=data))
+        self.plugin.publish("input", dict(data=data))
 
 
 class ByeByeStandbyFactory(Factory):

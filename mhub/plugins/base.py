@@ -1,8 +1,10 @@
+import json
 import logging
 import os
 import sys
-
 from pymongo import Connection
+
+from persistence import StateItem
 
 
 class BasePlugin(object):
@@ -18,7 +20,6 @@ class BasePlugin(object):
         """
 
         self.cfg = cfg or dict()
-        self.cfg["_id"] = "plugin.%s.!config" % (self.name)
 
         app_cfg = self.service.cfg.get("app")
         cache_dir = app_cfg.get("general").get("cache_dir")
@@ -31,7 +32,9 @@ class BasePlugin(object):
             os.makedirs(plugin_cache_dir)
 
         self.cache_dir = plugin_cache_dir
-        self.state.save(self.cfg)
+
+        plugin_cfg = StateItem(name="plugin.%s.!config" % (self.name), value=json.dumps(self.cfg))
+        plugin_cfg.save()
 
         self.subscribe(self.reconfigure, "app.reconfigure")
 
@@ -78,52 +81,3 @@ class BasePlugin(object):
         self.cfg = self.db_get(self.state, "!config", self.default_config)
 
 
-    def db_get(self, coll, key, default=None):
-
-        result = coll.find_one({
-            "_id": self.db_key(key),
-        })
-
-        if default:
-            result["value"] = default
-            coll.save(result)
-
-        if result:
-            return result.get("value", default)
-        else:
-            return default
-
-
-    def db_save(self, coll, key, value):
-
-        coll.save({
-            "_id": self.db_key(key),
-            "value": value
-        })
-
-
-    def db_remove(self, coll, key):
-
-        coll.remove({"_id": self.db_key(key)})
-
-
-    def get_resource(self, key):
-
-        return self.store.find_one({"type": "resource", "_id": "resource.%s" % (key)})
-
-
-    def get_resources(self, cls):
-
-        return list(self.store.find({"type": "resource", "class": cls}))
-
-        
-    def db_key(self, key):
-
-        """
-        Generates fully qualified plugin key
-
-        :param key: Name of key.
-        :type key: str.
-        """
-
-        return "%s.%s.%s" % ("plugin", self.name, key)

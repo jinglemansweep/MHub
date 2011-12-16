@@ -18,6 +18,7 @@ import sys
 
 from pymongo import Connection
 from pymongo.errors import AutoReconnect
+from mongoengine import connect
 from twisted.application.service import Service
 from twisted.internet import reactor, threads
 
@@ -35,6 +36,8 @@ from plugins.test import TestPlugin
 from plugins.twitter_client import TwitterPlugin
 from plugins.web import WebPlugin
 from plugins.xmpp import XmppPlugin
+
+from persistence import StateItem
 
 
 class BaseService(Service):
@@ -100,17 +103,14 @@ class BaseService(Service):
         store_host = app_cfg.get("general").get("store_host", "localhost")
         store_port = app_cfg.get("general").get("store_port", 27017)
 
+        self.logger.debug("MongoDB: %s:%i" % (store_host, store_port))
+
         try:
 
-            ds_conn = Connection(store_host, store_port)
-            ds_db = ds_conn["mhub"]
-            self.state = ds_db["state"]
-            self.store = ds_db["store"]
+            connect("mhub", host=store_host, port=store_port)
 
-            self.state.save({
-                "_id": "app.!config",
-                "value": app_cfg
-            })
+            service_cfg = StateItem(name="app.!config", value=json.dumps(app_cfg))
+            service_cfg.save()
 
         except AutoReconnect, e:
             
@@ -140,8 +140,6 @@ class BaseService(Service):
             p_inst.cls = p_cls_str
             p_inst.service = p_inst.s = self
             p_inst.logger = logging.getLogger("plugin")
-            p_inst.state = self.state
-            p_inst.store = self.store
             p_inst.setup(plugin_cfg)
 
             self.logger.debug("%s.%s registered" % (p_cls_str, name))
@@ -168,6 +166,7 @@ class BaseService(Service):
                     func(fq_signal, detail)
                 except Exception, e:
                     self.logger.debug("Cannot call callback '%s'" % (func.__name__))
+                    self.logger.debug(e)
 
                 match_count += 1
 

@@ -4,3 +4,4 @@ pyyaml
 wokkel
 http://www.freedesktop.org/~lanius/pyxdg-0.18.tar.gz
 pymongo
+https://github.com/sbook/flask-mongoengine/tarball/master

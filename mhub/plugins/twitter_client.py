@@ -71,7 +71,7 @@ class TwitterPlugin(BasePlugin):
 
             tweet_ids.append(msg.id)
 
-            self.publish_event("new_tweet", {
+            self.publish("new_tweet", {
                 "id": msg.id,
                 "body": msg.text,
                 "source": msg.source,

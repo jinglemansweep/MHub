@@ -2,6 +2,10 @@
 
 {% block page_title %}{{ super() }} &gt; Home{% endblock %}
 
+{% block js_ready %}
+  setup_event_websocket("{{ ws_url }}");
+{% endblock %}
+
 {% block content %}
 
         <div class="row"> 

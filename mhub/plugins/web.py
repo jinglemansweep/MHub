@@ -9,9 +9,22 @@ from lib.websocket import WebSocketHandler, WebSocketSite
 from twisted.web.resource import Resource
 from twisted.web.wsgi import WSGIResource
 from flask import Flask, g, request, render_template, redirect
+from flaskext.mongoengine import MongoEngine
+from flaskext.mongoengine.wtf import model_form
+from wtforms.widgets import TextArea
 
 from base import BasePlugin
+from persistence import Resource as DBResource
 
+
+DBResourceForm = model_form(DBResource, field_args={
+    "name": {"label": "Name"},
+    "value": {"widget": TextArea(), "label": "Value"},
+    "item_type": {"label": "Type"},
+    "item_class": {"label": "Class"},
+    "mimetype": {"label": "MIME Type"},
+    "description": {"label": "Description"}
+})
 
 
 class WebPlugin(BasePlugin):
@@ -34,9 +47,17 @@ class WebPlugin(BasePlugin):
                                      "data",
                                      "web")
 
-        self.app = Flask(__name__,
-                         template_folder=os.path.join(self.data_root,
-                                                      "templates"))
+        app_cfg = self.service.cfg.get("app")
+        mongo_server = app_cfg.get("general").get("mongo_server", "localhost")
+        mongo_port = app_cfg.get("general").get("mongo_port", 27017)
+
+        self.app = Flask(__name__, template_folder=os.path.join(self.data_root, "templates"))
+        self.app.config.update({
+            "MONGODB_DB": "mhub",
+            "MONGODB_HOST": mongo_server,
+            "MONGODB_PORT": mongo_port
+        })
+        self.db = MongoEngine(self.app)
 
         static = Static.File(os.path.join(self.data_root, "static"))
         static.processors = {
@@ -60,11 +81,11 @@ class WebPlugin(BasePlugin):
 
         @self.app.route("/")
         def index():
-            return redirect("/admin/" % (web_prefix))
+            return redirect("/admin/")
 
         @self.app.route("/reconfigure/")
         def reconfigure():
-            self.publish_event("app.reconfigure")
+            self.publish("app.reconfigure")
             return redirect("/")
 
         @self.app.route("/admin/")
@@ -72,10 +93,16 @@ class WebPlugin(BasePlugin):
             ctx = self.context_processor()
             return render_template("admin/home.html", **ctx)
 
-        @self.app.route("/admin/resources/")
+        @self.app.route("/admin/resources/", methods=["GET", "POST"])
         def admin_resources():
+ 
             ctx = self.context_processor()
+            form = DBResourceForm(request.form)
+            if request.method == "POST" and form.validate():
+                redirect("DONE")
+            ctx["form"] = form
             return render_template("admin/resources.html", **ctx)
+
 
 
     def context_processor(self):

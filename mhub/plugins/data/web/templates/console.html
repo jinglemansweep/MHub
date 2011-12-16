@@ -1,0 +1,36 @@
+<html>
+<head>
+  <title>SOAP</title>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+  <script type="text/javascript">
+
+    $(document).ready(function () {
+
+        var Socket = window["MozWebSocket"] || window["WebSocket"];
+        var ws = new Socket("ws://localhost:9010/ws");
+ 
+        ws.onmessage = function(evt) {
+            var data = JSON.parse(evt.data);
+            console.dir(data);
+        }
+        
+        ws.onopen = function(evt) {
+            console.log("WS Open");
+        }
+        
+        ws.onerror = function(evt) {
+            console.log("WS Error");
+        }
+       
+        ws.onclose = function(evt) {
+            console.log("WS Close");
+        }
+
+    });
+
+  </script>
+</head>
+<body>
+  <h1>SOAP Send</h1>
+</body>
+</html>

@@ -7,7 +7,7 @@ from twisted.web.client import getPage
 from base import BasePlugin
 
 
-class HttpPlugin(BasePlugin):
+class Httwhipper
 
     """
     HTTP page downloader plugin.
@@ -68,7 +68,7 @@ class HttpPlugin(BasePlugin):
         if found:                  
             detail = dict(url=self.url,
                           matches=matches)
-            self.publish_event("match", detail)
+            self.publish("match", detail)
 
 
     def error_response(self, detail):
