@@ -100,6 +100,8 @@ class BaseService(Service):
         store_host = app_cfg.get("general").get("store_host", "localhost")
         store_port = app_cfg.get("general").get("store_port", 27017)
 
+        self.logger.debug("MongoDB: %s:%i" % (store_host, store_port))
+
         try:
 
             ds_conn = Connection(store_host, store_port)
@@ -168,6 +170,7 @@ class BaseService(Service):
                     func(fq_signal, detail)
                 except Exception, e:
                     self.logger.debug("Cannot call callback '%s'" % (func.__name__))
+                    self.logger.debug(e)
 
                 match_count += 1
 

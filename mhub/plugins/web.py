@@ -64,7 +64,7 @@ class WebPlugin(BasePlugin):
 
         @self.app.route("/reconfigure/")
         def reconfigure():
-            self.publish_event("app.reconfigure")
+            self.publish("app.reconfigure")
             return redirect("/")
 
         @self.app.route("/admin/")

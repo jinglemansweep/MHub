@@ -1,5 +1,6 @@
 import os
 import spidermonkey
+import sys
 
 from base import BasePlugin
 
@@ -54,12 +55,14 @@ class ScriptingPlugin(BasePlugin):
         for rid, body in self.scripts.iteritems():
             try:
                 self.jsctx.execute(body)
-            except:
-                self.invalid_scripts.add(rid)
-            try:
-                self.invalid_scripts.remove(rid)
-            except KeyError, e:
                 pass
+            except Exception, e:
+                self.invalid_scripts.add(rid)
+                self.logger.debug(sys.exc_info()[0])
+            # try:
+            #     self.invalid_scripts.remove(rid)
+            # except KeyError, e:
+            #     pass
             self.env = self.jsctx.execute("env;")
 
 
@@ -82,6 +85,7 @@ class ScriptingPlugin(BasePlugin):
             body = resource.get("body", "")
             if body != self.scripts.get(resource_id, ""):
                 self.logger.debug("Loaded script '%s'" % (resource_id))
+                self.logger.debug("Body: %s" % (body))
                 self.scripts[resource_id] = body
 
         self.service.reactor.callLater(reload_interval, self.load_scripts)
@@ -115,7 +119,6 @@ class ScriptingPlugin(BasePlugin):
         signal = self.js_to_python(signal)
         detail = self.js_to_python(detail)
         self.publish(signal, detail)
-
 
     def js_clear_env(self):
 
@@ -152,7 +155,7 @@ class ScriptingPlugin(BasePlugin):
         # string / unicode
         elif obj_type == unicode or obj_type == str:
             obj = obj.replace('"', '\\"').replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
-            return ''.join(['"', obj, '"'])
+            return ''.join(['', obj, ''])
         # everything else
         else:
             return unicode(obj)
