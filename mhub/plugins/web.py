@@ -14,17 +14,6 @@ from flaskext.mongoengine.wtf import model_form
 from wtforms.widgets import TextArea
 
 from base import BasePlugin
-from persistence import Resource as DBResource
-
-
-DBResourceForm = model_form(DBResource, field_args={
-    "name": {"label": "Name"},
-    "value": {"widget": TextArea(), "label": "Value"},
-    "item_type": {"label": "Type"},
-    "item_class": {"label": "Class"},
-    "mimetype": {"label": "MIME Type"},
-    "description": {"label": "Description"}
-})
 
 
 class WebPlugin(BasePlugin):
@@ -52,12 +41,6 @@ class WebPlugin(BasePlugin):
         mongo_port = app_cfg.get("general").get("mongo_port", 27017)
 
         self.app = Flask(__name__, template_folder=os.path.join(self.data_root, "templates"))
-        self.app.config.update({
-            "MONGODB_DB": "mhub",
-            "MONGODB_HOST": mongo_server,
-            "MONGODB_PORT": mongo_port
-        })
-        self.db = MongoEngine(self.app)
 
         static = Static.File(os.path.join(self.data_root, "static"))
         static.processors = {

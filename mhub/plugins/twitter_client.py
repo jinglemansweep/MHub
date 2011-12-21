@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 
@@ -6,10 +7,7 @@ from twisted.internet import defer, task
 from twisted.internet.task import LoopingCall
 from twittytwister import twitter
 
-
 from base import BasePlugin
-
-
 
 
 class TwitterPlugin(BasePlugin):
@@ -63,9 +61,10 @@ class TwitterPlugin(BasePlugin):
         except KeyError, e:
             self.logger.debug("Failed to poll tweets")
 
+
     def got_tweet(self, msg):
 
-        tweet_ids = self.db_get(self.state, "tweet_ids", list())
+        tweet_ids = self.db_get("cache", "tweet_ids", list())
 
         if msg.id not in tweet_ids:
 
@@ -79,5 +78,5 @@ class TwitterPlugin(BasePlugin):
                 "created_at": msg.created_at
             })
 
-        self.db_save(self.state, "tweet_ids", tweet_ids)
+        self.db_set("cache", "tweet_ids", tweet_ids)
 

@@ -4,8 +4,6 @@ import os
 import sys
 from pymongo import Connection
 
-from persistence import StateItem
-
 
 class BasePlugin(object):
 
@@ -23,18 +21,13 @@ class BasePlugin(object):
 
         app_cfg = self.service.cfg.get("app")
         cache_dir = app_cfg.get("general").get("cache_dir")
-        mongo_server = app_cfg.get("general").get("mongo_server", "localhost")
-        mongo_port = app_cfg.get("general").get("mongo_port", 27017)
-
         plugin_cache_dir = os.path.join(cache_dir, "plugins", self.cls, self.name)
 
         if not os.path.exists(plugin_cache_dir):
             os.makedirs(plugin_cache_dir)
 
         self.cache_dir = plugin_cache_dir
-
-        plugin_cfg = StateItem(name="plugin.%s.!config" % (self.name), value=json.dumps(self.cfg))
-        plugin_cfg.save()
+        self.db_set(self.service.cache, "_config", self.cfg)
 
         self.subscribe(self.reconfigure, "app.reconfigure")
 
@@ -79,5 +72,34 @@ class BasePlugin(object):
 
         self.logger.debug("Reconfiguring plugin '%s'" % (self.name))
         self.cfg = self.db_get(self.state, "!config", self.default_config)
+
+
+    def db_get(self, collection, name, default, scope="plugin"):
+
+        """
+        Retrieve value from configured database connection
+        """
+
+        db_name = "%s.%s" % (self.name, name)
+        return self.service.db_get(collection, db_name, default, scope)
+
+
+    def db_find(self, collection, query, scope="plugin"):
+
+        """
+        Retrieve value from configured database connection
+        """
+
+        return self.service.db_find(collection, query, scope)
+
+
+    def db_set(self, collection, name, value, scope="plugin"):
+
+        """
+        Store value in configured database connection
+        """
+        
+        db_name = "%s.%s" % (self.name, name)
+        self.service.db_set(collection, db_name, value, scope)
 
 

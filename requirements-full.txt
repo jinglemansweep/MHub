@@ -7,7 +7,6 @@ jinja2
 wokkel
 pyopenssl
 python-mpd-twisted
-python-spidermonkey
 http://www.freedesktop.org/~lanius/pyxdg-0.18.tar.gz
 sphinx
 twittytwister

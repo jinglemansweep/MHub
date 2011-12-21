@@ -18,7 +18,6 @@ import sys
 
 from pymongo import Connection
 from pymongo.errors import AutoReconnect
-from mongoengine import connect
 from twisted.application.service import Service
 from twisted.internet import reactor, threads
 
@@ -36,8 +35,6 @@ from plugins.test import TestPlugin
 from plugins.twitter_client import TwitterPlugin
 from plugins.web import WebPlugin
 from plugins.xmpp import XmppPlugin
-
-from persistence import StateItem
 
 
 class BaseService(Service):
@@ -107,10 +104,15 @@ class BaseService(Service):
 
         try:
 
-            connect("mhub", host=store_host, port=store_port)
+            self.mongo_connection = Connection()
+            self.mongo_db = self.mongo_connection["mhub"]
+            self.store = self.mongo_db["store"]
+            self.cache = self.mongo_db["cache"]
 
-            service_cfg = StateItem(name="app.!config", value=json.dumps(app_cfg))
-            service_cfg.save()
+            self._db_map = dict(store=self.store,
+                                cache=self.cache)
+
+            self.db_set(self.cache, "_config", app_cfg)
 
         except AutoReconnect, e:
             
@@ -185,6 +187,60 @@ class BaseService(Service):
 
         self.logger.debug("Subscribed pattern '%s' with '%s'" % (pattern, func.__name__))
         self.subscriptions.append((func, pattern))
+
+
+    def db_find(self, collection, query, scope="service"):
+
+        """
+        Retrieve value from configured database connection
+        """
+
+        db_collection = self._db_map.get(collection, self.cache)
+
+        if query is None: query = dict()
+
+        records = db_collection.find(query)
+        if not records: return list()
+        return records
+
+
+    def db_get(self, collection, name, default=None, scope="service"):
+
+        """
+        Retrieve value from configured database connection
+        """
+
+        db_collection = self._db_map.get(collection, self.cache)
+
+        db_name = self._db_name(name, scope)
+        existing = db_collection.find_one({"name": db_name})
+        
+        if existing:
+            return existing["value"]
+        else:
+            return default
+
+
+
+    def db_set(self, collection, name, value, scope="service"):
+
+        """
+        Store value in configured database connection
+        """
+ 
+        db_collection = self._db_map.get(collection, self.cache)
+
+        db_name = self._db_name(name, scope) 
+        collection.update({"name": db_name}, {"name": db_name, "value": value}, upsert=True)
+
+
+    def _db_name(self, name, scope="service"):
+
+        """
+        Generates scoped database record name
+        """
+       
+        return "%s.%s" % (scope, name) 
 
 
     # Twisted overrides
