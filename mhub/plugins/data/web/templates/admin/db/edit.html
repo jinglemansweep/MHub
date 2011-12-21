@@ -1,0 +1,21 @@
+{% extends "admin/_admin.html" %}
+
+{% block page_title %}{{ super() }} &gt; Database{% endblock %}
+
+{% block content %}
+
+  <div class="row"> 
+    <div class="span12"> 
+      <h2>Database</h2>
+      <h3>Editing <span>'{{ item._id }}'<span></h3>
+      <form class="form-stacked">
+        {% for key, value in item | dictsort %}
+          <label>{{ key }}</label>
+          <textarea>{{ value }}</textarea>
+        {% endfor %}
+      </form>
+    </div> 
+  <div> 
+
+{% endblock %}
+

@@ -17,6 +17,7 @@ import pprint
 import sys
 
 from pymongo import Connection
+from pymongo.objectid import ObjectId
 from pymongo.errors import AutoReconnect
 from twisted.application.service import Service
 from twisted.internet import reactor, threads
@@ -204,6 +205,26 @@ class BaseService(Service):
         return records
 
 
+    def db_find_one(self, collection, query, scope="service"):
+
+        """
+        Retrieve value from configured database connection
+        """
+
+        db_collection = self._db_map.get(collection, self.cache)
+
+        if query is None:
+            query = dict()
+        elif type(query) in (str, unicode):
+            query = ObjectId(query)
+
+        print collection, query, type(query)
+
+        record = db_collection.find_one(query)
+        return record
+
+
+
     def db_get(self, collection, name, default=None, scope="service"):
 
         """
@@ -219,7 +240,6 @@ class BaseService(Service):
             return existing["value"]
         else:
             return default
-
 
 
     def db_set(self, collection, name, value, scope="service"):

@@ -1,0 +1,39 @@
+{% extends "admin/_admin.html" %}
+
+{% block page_title %}{{ super() }} &gt; Database{% endblock %}
+
+{% block content %}
+
+  <div class="row"> 
+    <div class="span12"> 
+      <h2>Database</h2>
+      <h3>Items</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Detail</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in store_items %}
+            <tr>
+              <td>
+                <a href="../edit/{{ item._id }}">
+                  <span>{{ item._id }}</span>
+                </a>
+              </td>
+              <td>
+                {% for key, value in item | dictsort %}
+                  {{ key }}: {{ value }}
+                {% endfor %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div> 
+  <div> 
+
+{% endblock %}
+

@@ -76,15 +76,27 @@ class WebPlugin(BasePlugin):
             ctx = self.context_processor()
             return render_template("admin/home.html", **ctx)
 
-        @self.app.route("/admin/resources/", methods=["GET", "POST"])
-        def admin_resources():
+        @self.app.route("/admin/db/")
+        def admin_db():
+            return redirect("/admin/db/list/")
+
+        @self.app.route("/admin/db/list/")
+        def admin_db_list():
  
             ctx = self.context_processor()
-            form = DBResourceForm(request.form)
-            if request.method == "POST" and form.validate():
-                redirect("DONE")
-            ctx["form"] = form
-            return render_template("admin/resources.html", **ctx)
+
+            store_items = self.service.db_find("store", {})
+            ctx["store_items"] = list(store_items)
+           
+            return render_template("admin/db/list.html", **ctx)
+
+        @self.app.route("/admin/db/edit/<item_id>")
+        def admin_db_edit(item_id):
+
+            ctx = self.context_processor()
+            item = self.service.db_find_one("store", item_id)
+            ctx["item"] = dict(item)
+            return render_template("admin/db/edit.html", **ctx)
 
 
 
