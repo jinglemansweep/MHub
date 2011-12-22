@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+
 from twisted.internet import reactor
 from twisted.internet.protocol import Protocol, Factory
 from twisted.protocols.policies import ProtocolWrapper, WrappingFactory
@@ -9,9 +10,7 @@ from lib.websocket import WebSocketHandler, WebSocketSite
 from twisted.web.resource import Resource
 from twisted.web.wsgi import WSGIResource
 from flask import Flask, g, request, render_template, redirect
-from flaskext.mongoengine import MongoEngine
-from flaskext.mongoengine.wtf import model_form
-from wtforms.widgets import TextArea
+from flaskext.wtf import BaseForm, TextField, Required
 
 from base import BasePlugin
 
@@ -90,14 +89,32 @@ class WebPlugin(BasePlugin):
            
             return render_template("admin/db/list.html", **ctx)
 
-        @self.app.route("/admin/db/edit/<item_id>")
+        @self.app.route("/admin/db/edit/<item_id>", methods=["GET", "POST"])
         def admin_db_edit(item_id):
 
             ctx = self.context_processor()
             item = self.service.db_find_one("store", item_id)
-            ctx["item"] = dict(item)
+            form = _build_db_form(item)
+            form.populate_obj(request.form)
+            ctx["item"] = item
+            ctx["form"] = form
+
+            if request.method == "POST" and form.validate():
+                return redirect("/admin/db/list/")
+           
             return render_template("admin/db/edit.html", **ctx)
 
+
+        def _build_db_form(item):
+
+            fields = dict()
+
+            for k, v in item.iteritems():
+                fields[k] = TextField()
+
+            form = BaseForm(fields=fields)
+
+            return form
 
 
     def context_processor(self):

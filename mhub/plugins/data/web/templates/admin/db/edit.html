@@ -8,11 +8,14 @@
     <div class="span12"> 
       <h2>Database</h2>
       <h3>Editing <span>'{{ item._id }}'<span></h3>
-      <form class="form-stacked">
-        {% for key, value in item | dictsort %}
-          <label>{{ key }}</label>
-          <textarea>{{ value }}</textarea>
+      <form action="" name="edit" method="post" class="form-stacked">
+        {% for field in form._fields %}
+          <hr/>
+          {{ field.label }}
+          {{ field }}
         {% endfor %}
+        <hr/>
+        <input type="submit" value="Submit" />
       </form>
     </div> 
   <div> 
