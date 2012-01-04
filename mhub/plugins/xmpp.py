@@ -82,7 +82,7 @@ class XmppFactory(MessageProtocol):
             "body": body
         }
 
-        self.plugin.publish("receive", detail)
+
 
 
 class XmppClient(XMPPClient):

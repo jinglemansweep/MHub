@@ -47,12 +47,11 @@ class TelnetProtocol(Protocol):
 
         try:
             data = json.loads(data)
+            data["raw"] = True
+            self.factory.plugin.publish(**data)
         except Exception, e:
             print e
             pass
-
-        self.factory.plugin.publish(data)
-        #self.factory.plugin.publish("input", data)
 
 
 class TelnetFactory(Factory):

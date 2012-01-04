@@ -191,6 +191,7 @@ class WebSocketProtocol(WebSocketHandler):
         print 'Peer: ', self.transport.getPeer()
         self.transport.write(frame)
 
+
     def connectionMade(self):
 
         """ Connection made helper """
@@ -204,6 +205,7 @@ class WebSocketProtocol(WebSocketHandler):
         """ Connection lost helper """
 
         print 'Lost connection.'
+
 
     def process_event(self, signal, detail):
 

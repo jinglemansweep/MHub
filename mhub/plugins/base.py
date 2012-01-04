@@ -46,7 +46,7 @@ class BasePlugin(object):
         self.service.subscribe(func, pattern)
 
 
-    def publish(self, signal, detail=None):
+    def publish(self, signal, detail=None, raw=False):
 
         """
         Publish (send) event to service.
@@ -59,7 +59,7 @@ class BasePlugin(object):
         :type detail: dict.
         """
 
-        self.service.publish(signal, detail, self)
+        self.service.publish(signal, detail, self.cls, self.name, raw)
 
 
     def reconfigure(self):

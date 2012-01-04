@@ -33,6 +33,7 @@ from plugins.scheduler import SchedulerPlugin
 from plugins.scripting import ScriptingPlugin
 from plugins.telnet import TelnetPlugin
 from plugins.test import TestPlugin
+from plugins.tivo import TivoPlugin
 from plugins.twitter_client import TwitterPlugin
 from plugins.web import WebPlugin
 from plugins.xmpp import XmppPlugin
@@ -62,6 +63,7 @@ class BaseService(Service):
         "scripting": ScriptingPlugin,
         "telnet": TelnetPlugin,
         "test": TestPlugin,
+        "tivo": TivoPlugin,
         "twitter": TwitterPlugin,
         "web": WebPlugin,
         "xmpp": XmppPlugin
@@ -151,13 +153,13 @@ class BaseService(Service):
                 p_inst.client.setServiceParent(self.app.root_service)
 
 
-    def publish(self, signal, detail, plugin):
+    def publish(self, signal, detail, plugin_cls, plugin_name, raw):
 
         """
         Publish event to service
         """
 
-        fq_signal = "%s.%s.%s" % (plugin.cls, plugin.name, signal)
+        fq_signal = signal if raw else "%s.%s.%s" % (plugin_cls, plugin_name, signal)
         if detail is None: detail = dict()
 
         match_count = 0
