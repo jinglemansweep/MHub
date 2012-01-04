@@ -251,7 +251,7 @@ class BaseService(Service):
         db_collection = self._db_map.get(collection, self.cache)
 
         db_name = self._db_name(name, scope) 
-        collection.update({"name": db_name}, {"name": db_name, "value": value}, upsert=True)
+        db_collection.update({"name": db_name}, {"name": db_name, "value": value}, upsert=True)
 
 
     def _db_name(self, name, scope="service"):
