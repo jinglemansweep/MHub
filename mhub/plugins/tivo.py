@@ -11,7 +11,9 @@ from base import BasePlugin
 class TivoPlugin(BasePlugin):
 
     """
-    Simple telnet plugin.
+    Tivo telnet control plugin.
+
+    (http://www.tivocommunity.com/tivo-vb/showthread.php?t=392385)
     """
 
     default_config = {
@@ -83,12 +85,11 @@ class TivoProtocol(Protocol):
             data_arr = data.split()
             try:
                 channel = int(data_arr[1])
+                status = data_arr[2]
             except:
                 channel = 0
-            self.factory.plugin.publish("channel", dict(channel=channel))
+            self.factory.plugin.publish("channel", dict(channel=channel, status=status))
             self.factory.plugin.cache["channel"] = channel
-
-        self.logger.debug(self.factory.plugin.cache)
 
 
     def process_command(self, signal, detail):
