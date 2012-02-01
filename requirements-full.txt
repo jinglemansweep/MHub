@@ -1,5 +1,6 @@
 Twisted
 txamqp
+txzmq
 pyyaml
 feedparser
 xmpppy
@@ -14,3 +15,4 @@ oauth
 flask
 flask-wtf
 https://github.com/wulczer/txWebSocket/zipball/master
+

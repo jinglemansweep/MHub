@@ -37,7 +37,7 @@ from plugins.tivo import TivoPlugin
 from plugins.twitter_client import TwitterPlugin
 from plugins.web import WebPlugin
 from plugins.xmpp import XmppPlugin
-
+from plugins.zmq import ZmqPlugin
 
 class BaseService(Service):
 
@@ -66,7 +66,8 @@ class BaseService(Service):
         "tivo": TivoPlugin,
         "twitter": TwitterPlugin,
         "web": WebPlugin,
-        "xmpp": XmppPlugin
+        "xmpp": XmppPlugin,
+        "zmq": ZmqPlugin
     }
 
 
