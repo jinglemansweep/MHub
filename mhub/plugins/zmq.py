@@ -38,9 +38,16 @@ class ZmqPlugin(BasePlugin):
 
     def process_event(self, signal, detail):
 
-        d = dict(signal=signal, detail=detail)
-        msg = json.dumps(d)
-        self.pub.publish(msg)
+        detail_json = json.dumps(detail)
+        app_cfg = self.service.cfg.get("app", dict())
+        general_cfg = app_cfg.get("general", dict())
+        nodename = general_cfg.get("name")
+        tags = list()
+
+        tags.append("signal::%s" % (signal))
+        if nodename is not None: tags.append("node::%s" % (nodename))
+
+        self.pub.publish(detail_json, " ".join(tags))
 
 
     def on_message(self, *args):

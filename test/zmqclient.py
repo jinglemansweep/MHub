@@ -6,14 +6,15 @@ from twisted.internet import reactor, defer
 from txZMQ import ZmqEndpoint, ZmqFactory, ZmqPubConnection, ZmqSubConnection
 
 zf = ZmqFactory()
-e = ZmqEndpoint("connect", "tcp://*:9001")
+e = ZmqEndpoint("connect", "tcp://*:9901")
 s = ZmqSubConnection(zf, e)
-s.subscribe("")
+s.subscribe("") # ("scheduler.scheduler001.new_interval")
 
 def doPrint(*args):
-    json_str = args[0]
-    json_obj = json.loads(json_str)
-    pprint.pprint(json_obj)
+    #json_str = args[0]
+    pprint.pprint(args)
+    #json_obj = json.loads(json_str)
+    #pprint.pprint(json_obj)
 
 s.gotMessage = doPrint
 
