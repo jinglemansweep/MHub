@@ -6,7 +6,7 @@ from twisted.internet import reactor, defer
 from txZMQ import ZmqEndpoint, ZmqFactory, ZmqPubConnection, ZmqSubConnection
 
 zf = ZmqFactory()
-e = ZmqEndpoint("connect", "ipc:///tmp/sock")
+e = ZmqEndpoint("connect", "tcp://*:9001")
 s = ZmqSubConnection(zf, e)
 s.subscribe("")
 

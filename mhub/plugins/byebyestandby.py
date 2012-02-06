@@ -16,7 +16,16 @@ class ByeByeStandbyPlugin(BasePlugin):
         "enabled": False,
         "host": "192.168.0.100",
         "port_receive": 53007,
-        "port_send": 53008
+        "port_send": 53008,
+        "blacklist": [
+            "Connecting to",
+            "DHCP Bound to",
+            "Resolving server address:",
+            "No reply, closing socket.",
+            "Closing socket",
+            "Timeout:TCP connection",
+            "Sent heartbeat"
+        ]
     }
 
 
@@ -28,9 +37,10 @@ class ByeByeStandbyPlugin(BasePlugin):
         self.protocol = ByeByeStandbyProtocol()
         self.protocol.plugin = self
 
-        port = self.cfg.get("port_receive", 53007)
+        self.port = self.cfg.get("port_receive", 53007)
+        self.blacklist = self.cfg.get("blacklist", [])
 
-        reactor.listenUDP(port, self.protocol)
+        reactor.listenUDP(self.port, self.protocol)
 
 
     def process_message(self, msg):
@@ -83,7 +93,7 @@ class ByeByeStandbyProtocol(DatagramProtocol):
         :type data: str.
         """
 
-        for ignored in self.ignored_data:
+        for ignored in self.plugin.blacklist:
             if ignored in data: return
         
         self.plugin.publish("input", dict(data=data))

@@ -31,6 +31,7 @@ class TwitterPlugin(BasePlugin):
         BasePlugin.setup(self, cfg)
 
         logging.getLogger("twittytwister").setLevel(logging.ERROR)
+        logging.getLogger("HTTPPageDownloader").setLevel(logging.ERROR)
         
         self.consumer_key = self.cfg.get("consumer_key")
         self.consumer_secret = self.cfg.get("consumer_secret")

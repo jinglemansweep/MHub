@@ -11,7 +11,9 @@ class ZmqPlugin(BasePlugin):
     """
 
     default_config = {
-        "enabled": False
+        "enabled": False,
+        "pub_endpoint": "tcp://*:9901",
+        "sub_endpoint": "tcp://*:9901"
     }
 
 
@@ -22,36 +24,28 @@ class ZmqPlugin(BasePlugin):
         self.factory = MZMQFactory(plugin=self)
         self.factory.plugin = self
 
-        self.endpoint_uri = "ipc:///tmp/sock"
-        self.pub_endpoint = ZmqEndpoint("bind", self.endpoint_uri)
-        self.sub_endpoint = ZmqEndpoint("connect", self.endpoint_uri)
+        self.pub_endpoint_uri = cfg.get("pub_endpoint", "tcp://*:9901")
+        self.pub_endpoint = ZmqEndpoint("bind", self.pub_endpoint_uri)
+        self.sub_endpoint_uri = cfg.get("sub_endpoint", "tcp://*:9901")
+        self.sub_endpoint = ZmqEndpoint("connect", self.sub_endpoint_uri)
         self.pub = ZmqPubConnection(self.factory, self.pub_endpoint)
         self.sub = ZmqSubConnection(self.factory, self.sub_endpoint)
         self.sub.subscribe("")
         self.sub.gotMessage = self.on_message
 
-        self.service.reactor.callLater(2, self.send_test_message, "subject body")
-
         self.subscribe(self.process_event)
-
-
-    def send_test_message(self, msg):
-
-        self.pub.publish(msg)
-
 
 
     def process_event(self, signal, detail):
 
-        json_obj = dict(signal=signal, detail=detail)
-        json_str = json.dumps(json_obj)
-
-        self.pub.publish(json_str)
+        d = dict(signal=signal, detail=detail)
+        msg = json.dumps(d)
+        self.pub.publish(msg)
 
 
     def on_message(self, *args):
 
-        self.logger.debug(args)
+        self.logger.debug("ZMQ: %s" % (str(args)))
 
 
 class MZMQFactory(ZmqFactory):
