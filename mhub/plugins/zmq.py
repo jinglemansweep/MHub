@@ -47,7 +47,10 @@ class ZmqPlugin(BasePlugin):
         tags.append("signal::%s" % (signal))
         if nodename is not None: tags.append("node::%s" % (nodename))
 
-        self.pub.publish(detail_json, " ".join(tags))
+	detail_str = str(detail_json)
+	tags_str = str(" ".join(tags))
+
+        self.pub.publish(detail_str, tags_str)
 
 
     def on_message(self, *args):
