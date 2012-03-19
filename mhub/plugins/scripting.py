@@ -1,5 +1,4 @@
 import os
-import spidermonkey
 import sys
 import traceback
 
@@ -22,6 +21,11 @@ class ScriptingPlugin(BasePlugin):
 
 
     def setup(self, cfg):
+
+        try:
+            import spidermonkey
+        except ImportError:
+            return
 
         BasePlugin.setup(self, cfg)
 

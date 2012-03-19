@@ -29,6 +29,7 @@ from plugins.email import EmailPlugin
 from plugins.http import HttpPlugin
 from plugins.latitude import LatitudePlugin
 from plugins.mpd_client import MpdPlugin
+from plugins.pubnub import PubnubPlugin
 from plugins.scheduler import SchedulerPlugin
 from plugins.scripting import ScriptingPlugin
 from plugins.telnet import TelnetPlugin
@@ -59,6 +60,7 @@ class BaseService(Service):
         "http": HttpPlugin,
         "latitude": LatitudePlugin,
         "mpd": MpdPlugin,
+        "pubnub": PubnubPlugin,
         "scheduler": SchedulerPlugin,
         "scripting": ScriptingPlugin,
         "telnet": TelnetPlugin,
