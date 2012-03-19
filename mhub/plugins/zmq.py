@@ -50,12 +50,14 @@ class ZmqPlugin(BasePlugin):
 	detail_str = str(detail_json)
 	tags_str = str(" ".join(tags))
 
-        self.pub.publish(detail_str, tags_str)
+	if not signal.startswith("zmq."):
+	    self.pub.publish(detail_str, tags_str)
 
 
     def on_message(self, *args):
 
-        self.logger.debug("ZMQ: %s" % (str(args)))
+	pass
+        # self.logger.debug("ZMQ: %s" % (str(args)))
 
 
 class MZMQFactory(ZmqFactory):

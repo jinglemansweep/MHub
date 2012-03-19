@@ -1,3 +1,4 @@
+import json
 import logging
 from plugins.lib.pubnub import Pubnub
 
@@ -61,7 +62,7 @@ class PubnubPlugin(BasePlugin):
         self.logger.debug("Connected")
 
 
-    def on_message(self, body):
+    def on_message(self, data):
 
         """
         On message callback
@@ -70,8 +71,7 @@ class PubnubPlugin(BasePlugin):
         :type body: str.
         """
 
-        self.publish("message", body)
-
-
+        #data["raw"] = True
+	self.publish(**data)
 
 
