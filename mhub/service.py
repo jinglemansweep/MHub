@@ -16,6 +16,7 @@ import json
 import logging
 import pprint
 import sys
+import traceback
 
 from pymongo import Connection
 from pymongo.objectid import ObjectId
@@ -185,8 +186,10 @@ class BaseService(Service):
                 try:
                     func(tags, detail)
                 except Exception, e:
+                    tb = traceback.format_exc()
                     self.logger.debug("Cannot call callback '%s'" % (func.__name__))
                     self.logger.debug(e)
+                    self.logger.debug(tb)
 
                 match_count += 1
 
