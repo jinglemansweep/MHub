@@ -43,7 +43,7 @@ class ZmqPlugin(BasePlugin):
         general_cfg = app_cfg.get("general", dict())
         nodename = general_cfg.get("name")
 
-        self.pub.publish(detail_json, tags)
+        self.pub.publish(detail_json, " ".join(tags))
 
 
     def on_message(self, *args):
