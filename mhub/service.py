@@ -175,6 +175,10 @@ class BaseService(Service):
         if not filter(lambda tag: tag.startswith("c:"), tags):
             tags.append("c:%s" % (plugin.cls))
 
+        if not filter(lambda tag: tag.startswith("h:"), tags):
+            tags.append("h:%s" % (self.cfg.get("app").get("general").get("name")))
+
+
         match_count = 0
 
         for subscription in self.subscriptions:
