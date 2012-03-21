@@ -48,7 +48,8 @@ class ZmqPlugin(BasePlugin):
 
     def on_message(self, *args):
 
-        self.logger.debug("ZMQ: %s" % (str(args)))
+	    pass
+        # self.logger.debug("ZMQ: %s" % (str(args)))
 
 
 class MZMQFactory(ZmqFactory):

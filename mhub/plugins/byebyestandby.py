@@ -24,7 +24,8 @@ class ByeByeStandbyPlugin(BasePlugin):
             "No reply, closing socket.",
             "Closing socket",
             "Timeout:TCP connection",
-            "Sent heartbeat"
+            "Sent heartbeat",
+            "Z:OK:E"
         ]
     }
 
@@ -42,31 +43,29 @@ class ByeByeStandbyPlugin(BasePlugin):
 
         reactor.listenUDP(self.port, self.protocol)
 
+	self.subscribe(self.switch_device, "%s.%s.switch" % (self.cls, self.name))
 
-    def process_message(self, msg):
+
+    def switch_device(self, signal, detail):
 
         """
-        Service message process callback.
+        Device switcher callback.
 
         :param msg: Message dictionary.
         :type msg: dict.
         """
 
-        msg_type = msg.get("type")
-        event = msg.get("event")
-        detail = msg.get("detail")
         frequency = detail.get("frequency", 3)
 
-        if msg_type == "event" and event == "switch":
-            state = 1 if detail.get("state", False) else 0
-            device = detail.get("device")
-            host = self.cfg.get("host")
-            port = self.cfg.get("port_send", 53008)
-            if device and host:
-                h, u = device[0], device[1:]
-                cmd = "D:%i%s%02d:E" % (int(state), h.upper(), int(u))
-                for _ in xrange(frequency):
-                    self.socket.sendto(cmd, (host, port))
+        state = 1 if detail.get("state", False) else 0
+        device = detail.get("device")
+        host = self.cfg.get("host")
+        port = self.cfg.get("port_send", 53008)
+        if device and host:
+            h, u = device[0], device[1:]
+            cmd = "D:%i%s%02d:E" % (int(state), h.upper(), int(u))
+            for _ in xrange(frequency):
+                self.socket.sendto(cmd, (host, port))
 
 
 

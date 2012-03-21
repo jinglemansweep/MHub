@@ -1,3 +1,4 @@
+import json
 import logging
 from plugins.lib.pubnub import Pubnub
 
@@ -71,7 +72,5 @@ class PubnubPlugin(BasePlugin):
         """
 
         self.publish(["a:message"], body)
-
-
 
 
