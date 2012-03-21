@@ -156,43 +156,54 @@ class BaseService(Service):
                 p_inst.client.setServiceParent(self.app.root_service)
 
 
-    def publish(self, signal, detail, plugin_cls, plugin_name, raw):
+    def publish(self, tags, detail, plugin):
 
         """
         Publish event to service
         """
 
-        fq_signal = signal if raw else "%s.%s.%s" % (plugin_cls, plugin_name, signal)
+        if type(tags) == str: tags = [tags]
         if detail is None: detail = dict()
+
+        tags = map(lambda t: "u:%s" % (t) if t[1] != ":" else "%s" % (t), tags)
+
+        if not filter(lambda tag: tag.startswith("n:"), tags):
+            tags.append("n:%s" % (plugin.name))
+ 
+        if not filter(lambda tag: tag.startswith("c:"), tags):
+            tags.append("c:%s" % (plugin.cls))
 
         match_count = 0
 
-        for sub in self.subscriptions:
-            if fnmatch.fnmatch(fq_signal, sub[1]):
-                func = sub[0]
+        for subscription in self.subscriptions:
+
+            func, query = subscription
+            
+            if set(query).issubset(set(tags)):
+ 
                 try:
-                    func(fq_signal, detail)
+                    func(tags, detail)
                 except Exception, e:
                     self.logger.debug("Cannot call callback '%s'" % (func.__name__))
                     self.logger.debug(e)
 
                 match_count += 1
 
-        self.logger.debug("Published event '%s' (%i receivers)" % (fq_signal, match_count))
+        self.logger.debug("Published event '%s' (%i receivers)" % (tags, match_count))
         self.logger.debug("Detail: %s" % (detail))
 
 
-    def subscribe(self, func, pattern=None):
+    def subscribe(self, func, query=None):
     
         """
         Create a subscription to a service event based on pattern matching
         """
 
-        if pattern is None:
-            pattern = "*"
+        if query is None:
+            query = list()
 
-        self.logger.debug("Subscribed pattern '%s' with '%s'" % (pattern, func.__name__))
-        self.subscriptions.append((func, pattern))
+        self.logger.debug("Subscribed query '%s' with '%s'" % (query, func.__name__))
+        self.subscriptions.append((func, query))
 
 
     def db_find(self, collection, query, scope="service"):

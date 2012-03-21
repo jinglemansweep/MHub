@@ -96,7 +96,7 @@ class ByeByeStandbyProtocol(DatagramProtocol):
         for ignored in self.plugin.blacklist:
             if ignored in data: return
         
-        self.plugin.publish("input", dict(data=data))
+        self.plugin.publish(["a:input"], dict(data=data))
 
 
 class ByeByeStandbyFactory(Factory):

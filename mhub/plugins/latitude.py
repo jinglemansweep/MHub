@@ -86,7 +86,7 @@ class LatitudePlugin(BasePlugin):
                 "location": location
             }
             self.apply_zones(geo_coords, location)
-            self.publish("location", detail)
+            self.publish(["a:location"], detail)
         except Exception, e:
             self.logger.debug("Cannot parse Latitude response")
 

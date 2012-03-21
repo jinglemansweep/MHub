@@ -39,15 +39,15 @@ class PubnubPlugin(BasePlugin):
         self.subscribe(self.on_event)
 
 
-    def on_event(self, signal, detail):
+    def on_event(self, tags, detail):
 
         """
         On event callback
         """
-        if not signal.startswith("pubnub."):
+        if "n:%s" % (self.name) not in tags:
             self.pn.publish({
                 "channel": self.cfg.get("channel"),
-                "message": dict(signal=signal, detail=detail),
+                "message": dict(tags=tags, detail=detail),
                 "callback": lambda c: None
             })
 
@@ -70,7 +70,7 @@ class PubnubPlugin(BasePlugin):
         :type body: str.
         """
 
-        self.publish("message", body)
+        self.publish(["a:message"], body)
 
 
 

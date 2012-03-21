@@ -68,7 +68,7 @@ class Httwhipper
         if found:                  
             detail = dict(url=self.url,
                           matches=matches)
-            self.publish("match", detail)
+            self.publish(["a:match"], detail)
 
 
     def error_response(self, detail):
