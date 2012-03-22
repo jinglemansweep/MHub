@@ -31,6 +31,7 @@ from plugins.email import EmailPlugin
 from plugins.http import HttpPlugin
 from plugins.latitude import LatitudePlugin
 from plugins.mpd_client import MpdPlugin
+from plugins.owfs import OwfsPlugin
 from plugins.pubnub import PubnubPlugin
 from plugins.scheduler import SchedulerPlugin
 from plugins.scripting import ScriptingPlugin
@@ -62,6 +63,7 @@ class BaseService(Service):
         "http": HttpPlugin,
         "latitude": LatitudePlugin,
         "mpd": MpdPlugin,
+	"owfs": OwfsPlugin,
         "pubnub": PubnubPlugin,
         "scheduler": SchedulerPlugin,
         "scripting": ScriptingPlugin,
@@ -167,6 +169,7 @@ class BaseService(Service):
         if type(tags) == str: tags = [tags]
         if detail is None: detail = dict()
 
+	tags = set(tags)
         tags = map(lambda t: "u:%s" % (t) if t[1] != ":" else "%s" % (t), tags)
 
         if not filter(lambda tag: tag.startswith("n:"), tags):
@@ -178,14 +181,15 @@ class BaseService(Service):
         if not filter(lambda tag: tag.startswith("h:"), tags):
             tags.append("h:%s" % (self.cfg.get("app").get("general").get("name")))
 
+	tags = sorted(tags)
 
         match_count = 0
 
         for subscription in self.subscriptions:
 
             func, query = subscription
-            
-            if set(query).issubset(set(tags)):
+
+            if query.issubset(tags):
  
                 try:
                     func(tags, detail)
@@ -209,6 +213,8 @@ class BaseService(Service):
 
         if query is None:
             query = list()
+
+	query = set(query)
 
         self.logger.debug("Subscribed query '%s' with '%s'" % (query, func.__name__))
         self.subscriptions.append((func, query))

@@ -1,4 +1,5 @@
 import json
+
 import logging
 from plugins.lib.pubnub import Pubnub
 
@@ -71,6 +72,6 @@ class PubnubPlugin(BasePlugin):
         :type body: str.
         """
 
-        self.publish(["a:message"], body)
+        self.publish(["o:message"], body)
 
 

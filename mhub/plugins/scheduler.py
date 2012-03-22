@@ -65,7 +65,7 @@ class SchedulerPlugin(BasePlugin):
             if new_interval:
                 if interval in publish_intervals:
                     self.publish(
-                        ["a:interval"], 
+                        ["o:interval"], 
                         {
                             "interval": interval,
                             "now": [getattr(dt, i) for i in self.intervals]
@@ -127,7 +127,7 @@ class SchedulerPlugin(BasePlugin):
                 matched = (trigger_total > 0 and trigger_matches == trigger_total)
                 if matched and not schedule.get("fired", False):
                     schedule["fired"] = True
-                    self.publish(["a:schedule"], {"schedule": schedule})
+                    self.publish(["o:schedule"], {"schedule": schedule})
             self.schedules[name] = schedule
             self.first_run = False
 

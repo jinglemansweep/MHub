@@ -43,10 +43,10 @@ class ByeByeStandbyPlugin(BasePlugin):
 
         reactor.listenUDP(self.port, self.protocol)
 
-	self.subscribe(self.switch_device, "%s.%s.switch" % (self.cls, self.name))
+	self.subscribe(self.switch_device, ["c:byebyestandby", "i:switch"])
 
 
-    def switch_device(self, signal, detail):
+    def switch_device(self, tags, detail):
 
         """
         Device switcher callback.

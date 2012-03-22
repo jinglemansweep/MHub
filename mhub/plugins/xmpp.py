@@ -44,7 +44,7 @@ class XmppFactory(MessageProtocol):
         self.plugin = plugin
         self.service = plugin.service
 
-        self.plugin.subscribe(self.send_message, ["c:%s" % (self.cls), "a:send"])
+        self.plugin.subscribe(self.send_message, ["i:send"])
 
 
     def send_message(self, signal, detail):

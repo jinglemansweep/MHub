@@ -38,18 +38,14 @@ class ZmqPlugin(BasePlugin):
 
     def process_event(self, tags, detail):
 
-        detail_json = json.dumps(detail)
-        app_cfg = self.service.cfg.get("app", dict())
-        general_cfg = app_cfg.get("general", dict())
-        nodename = general_cfg.get("name")
+        detail_json = str(json.dumps(detail))
 
-        self.pub.publish(detail_json, " ".join(tags))
+        self.pub.publish(detail_json, str(" ".join(tags)))
 
 
-    def on_message(self, *args):
+    def on_message(self, detail, tags):
 
-	    pass
-        # self.logger.debug("ZMQ: %s" % (str(args)))
+        self.logger.debug("ZMQ: [%s] %s" % (tags, detail))
 
 
 class MZMQFactory(ZmqFactory):

@@ -29,7 +29,7 @@ class BasePlugin(object):
         self.cache_dir = plugin_cache_dir
         self.db_set(self.service.cache, "_config", self.cfg)
 
-        self.subscribe(self.reconfigure, "app.reconfigure")
+        self.subscribe(self.reconfigure, ["c:mhub", "i:reconfigure"])
 
 
     def subscribe(self, func, query=None):
