@@ -88,7 +88,7 @@ class TivoProtocol(Protocol):
                 status = data_arr[2]
             except:
                 channel = 0
-            self.factory.plugin.publish("channel", dict(channel=channel, status=status))
+            self.factory.plugin.publish(["o:channel"], dict(channel=channel, status=status))
             self.factory.plugin.cache["channel"] = channel
 
 

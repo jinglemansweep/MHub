@@ -20,7 +20,7 @@ class EchoPlugin(BasePlugin):
         self.subscribe(self.process_event)
 
 
-    def process_event(self, signal, detail):
+    def process_event(self, tags, detail):
 
         """
         Service message process callback.
@@ -29,4 +29,4 @@ class EchoPlugin(BasePlugin):
         :type msg: dict.
         """
 
-        self.logger.debug("Echo: [%s] %s" % (signal, detail))
+        self.logger.debug("Echo: [%s] %s" % (",".join(tags), detail))

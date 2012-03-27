@@ -74,7 +74,7 @@ class AmqpPlugin(BasePlugin):
         :type msg: dict.
         """
 
-        self.publish("receive", msg)
+        self.publish(["o:receive"], msg)
 
 
 

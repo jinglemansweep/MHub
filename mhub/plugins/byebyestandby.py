@@ -43,10 +43,10 @@ class ByeByeStandbyPlugin(BasePlugin):
 
         reactor.listenUDP(self.port, self.protocol)
 
-	self.subscribe(self.switch_device, "%s.%s.switch" % (self.cls, self.name))
+	self.subscribe(self.switch_device, ["c:byebyestandby", "i:switch"])
 
 
-    def switch_device(self, signal, detail):
+    def switch_device(self, tags, detail):
 
         """
         Device switcher callback.
@@ -92,8 +92,10 @@ class ByeByeStandbyProtocol(DatagramProtocol):
         :type data: str.
         """
 
-	if len([i for i in self.plugin.blacklist if i in data]) == 0:
-            self.plugin.publish("input", dict(data=data))
+        for ignored in self.plugin.blacklist:
+            if ignored in data: return
+        
+        self.plugin.publish(["a:input"], dict(data=data))
 
 
 class ByeByeStandbyFactory(Factory):

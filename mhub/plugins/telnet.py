@@ -47,8 +47,7 @@ class TelnetProtocol(Protocol):
 
         try:
             data = json.loads(data)
-            data["raw"] = True
-            self.factory.plugin.publish(**data)
+            self.factory.plugin.publish(data.get("tags", list()), data.get("detail", dict()))
         except Exception, e:
             print e
             pass

@@ -36,28 +36,16 @@ class ZmqPlugin(BasePlugin):
         self.subscribe(self.process_event)
 
 
-    def process_event(self, signal, detail):
+    def process_event(self, tags, detail):
 
-        detail_json = json.dumps(detail)
-        app_cfg = self.service.cfg.get("app", dict())
-        general_cfg = app_cfg.get("general", dict())
-        nodename = general_cfg.get("name")
-        tags = list()
+        detail_json = str(json.dumps(detail))
 
-        tags.append("signal::%s" % (signal))
-        if nodename is not None: tags.append("node::%s" % (nodename))
-
-	detail_str = str(detail_json)
-	tags_str = str(" ".join(tags))
-
-	if not signal.startswith("zmq."):
-	    self.pub.publish(detail_str, tags_str)
+        self.pub.publish(detail_json, str(" ".join(tags)))
 
 
-    def on_message(self, *args):
+    def on_message(self, detail, tags):
 
-	pass
-        # self.logger.debug("ZMQ: %s" % (str(args)))
+        self.logger.debug("ZMQ: [%s] %s" % (tags, detail))
 
 
 class MZMQFactory(ZmqFactory):

@@ -1,4 +1,5 @@
 import json
+
 import logging
 from plugins.lib.pubnub import Pubnub
 
@@ -40,15 +41,15 @@ class PubnubPlugin(BasePlugin):
         self.subscribe(self.on_event)
 
 
-    def on_event(self, signal, detail):
+    def on_event(self, tags, detail):
 
         """
         On event callback
         """
-        if not signal.startswith("pubnub."):
+        if "n:%s" % (self.name) not in tags:
             self.pn.publish({
                 "channel": self.cfg.get("channel"),
-                "message": dict(signal=signal, detail=detail),
+                "message": dict(tags=tags, detail=detail),
                 "callback": lambda c: None
             })
 
@@ -62,7 +63,7 @@ class PubnubPlugin(BasePlugin):
         self.logger.debug("Connected")
 
 
-    def on_message(self, data):
+    def on_message(self, body):
 
         """
         On message callback
@@ -71,7 +72,6 @@ class PubnubPlugin(BasePlugin):
         :type body: str.
         """
 
-        #data["raw"] = True
-        self.publish(**data)
+        self.publish(["o:message"], body)
 
 

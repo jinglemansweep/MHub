@@ -29,37 +29,35 @@ class BasePlugin(object):
         self.cache_dir = plugin_cache_dir
         self.db_set(self.service.cache, "_config", self.cfg)
 
-        self.subscribe(self.reconfigure, "app.reconfigure")
+        self.subscribe(self.reconfigure, ["c:mhub", "i:reconfigure"])
 
 
-    def subscribe(self, func, pattern=None):
+    def subscribe(self, func, query=None):
 
         """
         Create a subscription to an event
 
         :param func: Callback function.
         :type func: function.
-        :param signal: Event signal.
-        :param sender: Event sender.
+        :param query: Event query.
+        :type query: dict.
         """
 
-        self.service.subscribe(func, pattern)
+        self.service.subscribe(func, query)
 
 
-    def publish(self, signal, detail=None, raw=False):
+    def publish(self, query, detail=None, raw=False):
 
         """
         Publish (send) event to service.
 
-        :param signal: Name of signal.
-        :type signal: str.
-        :param sender: Name of sender.
-        :type signal: str
+        :param query: Query object.
+        :type query: dict.
         :param detail: Detail dictionary.
         :type detail: dict.
         """
 
-        self.service.publish(signal, detail, self.cls, self.name, raw)
+        self.service.publish(query, detail, self)
 
 
     def reconfigure(self):
