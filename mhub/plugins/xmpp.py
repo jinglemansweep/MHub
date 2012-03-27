@@ -91,3 +91,5 @@ class XmppClient(XMPPClient):
 
         jid_obj = jid.internJID(user)
         XMPPClient.__init__(self, jid_obj, password, host, port)
+
+

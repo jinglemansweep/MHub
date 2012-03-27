@@ -10,7 +10,7 @@ from lib.websocket import WebSocketHandler, WebSocketSite
 from twisted.web.resource import Resource
 from twisted.web.wsgi import WSGIResource
 from flask import Flask, g, request, render_template, redirect
-from flaskext.wtf import BaseForm, TextField, Required
+from flaskext.wtf import Form as BaseForm, TextField, Required
 
 from base import BasePlugin
 

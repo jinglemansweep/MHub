@@ -166,11 +166,11 @@ class BaseService(Service):
         fq_signal = signal if raw else "%s.%s.%s" % (plugin_cls, plugin_name, signal)
         if detail is None: detail = dict()
 
-	now = datetime.datetime.now()
+        now = datetime.datetime.now()
 
-	detail["_metadata_"] = {
-	    "at": now.isoformat()
-	}
+        detail["_metadata_"] = {
+            "at": now.isoformat()
+        }
 
         match_count = 0
 

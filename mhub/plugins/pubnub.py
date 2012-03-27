@@ -72,6 +72,6 @@ class PubnubPlugin(BasePlugin):
         """
 
         #data["raw"] = True
-	self.publish(**data)
+        self.publish(**data)
 
 
