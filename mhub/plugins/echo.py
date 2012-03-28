@@ -29,4 +29,5 @@ class EchoPlugin(BasePlugin):
         :type msg: dict.
         """
 
-        self.logger.debug("Echo: [%s] %s" % (",".join(tags), detail))
+        self.logger.debug(",".join(tags))
+        self.logger.debug(detail)

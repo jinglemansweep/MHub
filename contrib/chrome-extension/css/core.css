@@ -1,0 +1,24 @@
+body {
+    font-family: "Arial", "Helvetica", "Sans-Serif", "Sans";
+    font-size: 10pt;
+}
+
+fieldset {
+    padding: 1em;
+}
+
+fieldset legend {
+    font-weight: bold;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+}
+
+fieldset .field label {
+    display: block;
+}
+
+fieldset .actions {
+    margin-top: 1em;
+}
+
+

@@ -3,6 +3,7 @@
     "version": "0.1",
     "description": "MHub Monitor (via PubNub)",
     "background_page": "background.html",
+    "options_page": "options.html",
     "browser_action": {
         "default_icon": "icon.png",
         "popup": "popup.html"

@@ -1,52 +1,11 @@
 <html>
 <head>
   <title>MHub</title>
-</head>
-<body>
-  <div pub-key="" sub-key="sub-c-6e89b5d9-7371-11e1-90ef-f54fe194450e" ssl="off" origin="pubsub.pubnub.com" id="pubnub"></div>
+  <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+  <script src="js/core.js"></script>  
   <script src="http://cdn.pubnub.com/pubnub-3.1.min.js"></script>
-  <script>
-    (function(){
-
-      var channel = "mhub";
-
-      function notify(body, timeout, title, icon) {
-
-        body_str = JSON.stringify(body)
-        timeout = (typeof timeout === "undefined" ? 10 : timeout)
-        title = (typeof title === "undefined" ? "MHub" : title);
-        icon = (typeof icon === "undefined" ? "icon.png" : icon);
-
-        var notification = webkitNotifications.createNotification(icon, title, body_str);
-        notification.show();
-        console.log("Notification: " + title + ": " + body);
-
-        setTimeout(function() { notification.cancel(); }, (timeout * 1000));
-
-                        
-
-      }
-
-      PUBNUB.subscribe({
-        channel: channel,
-        restore: false,
-        callback: function(message) {
-          notify(message);
-        },
-        disconnect: function() {
-          notify("Connection lost")
-        },
-        reconnect: function() {
-          notify("And we're back!")
-        },
-        connect: function() {
-          notify("Connected");
-          PUBNUB.publish({
-            channel: channel,
-            message: "Connected"
-          })
-        }
-      })
-    })();
-  </script>
+</head>
+<body class="background">
+</body>
+</html>
 
