@@ -49,7 +49,11 @@ class OwfsPlugin(BasePlugin):
 
         for m in measurements:
             if hasattr(sensor, m):
-                results[m] = getattr(sensor, m)
+                result = getattr(sensor, m)
+                try:
+                    results[m] = float(result)
+                except:
+                    results[m] = None
 
         self.publish(["o:status"], results)
 
