@@ -171,10 +171,6 @@ class BaseService(Service):
 
         now = datetime.datetime.now()
 
-        detail["_metadata_"] = {
-            "at": now.isoformat()
-        }
-
         tags = set(tags)
 
         tags = map(lambda t: "u:%s" % (t) if t[1] != ":" else "%s" % (t), tags)

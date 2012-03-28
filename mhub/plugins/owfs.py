@@ -12,7 +12,7 @@ class OwfsPlugin(BasePlugin):
     """
 
     default_config = {
-	"device": "u",
+        "device": "u",
         "poll_interval": 10
     }
     
@@ -21,10 +21,10 @@ class OwfsPlugin(BasePlugin):
 
         BasePlugin.setup(self, cfg)
         
-	self.device = self.cfg.get("device", "u")
-	self.sensors = dict()
+        self.device = self.cfg.get("device", "u")
+        self.sensors = dict()
 
-	ow.init(self.device)
+        ow.init(self.device)
 
         poll_task = LoopingCall(self.poll_bus)
         poll_task.start(self.cfg.get("poll_interval", 60))
@@ -37,21 +37,21 @@ class OwfsPlugin(BasePlugin):
         Retrieves sensor data from configured 1-wire bus.
         """
 
-	self.walk_sensor_tree(ow.Sensor("/"))
+        self.walk_sensor_tree(ow.Sensor("/"))
 
-	for p, t in self.sensors.iteritems():
-	   sensor = ow.Sensor(p)
-	   if hasattr(sensor, "temperature"):
-               temperature = float(sensor.temperature)
-	       self.sensors[p]["temperature"] = temperature
-	   if hasattr(sensor, "humidity"):
-               humidity = float(sensor.humidity)
-               self.sensors[p]["humidity"] = humidity
-           if hasattr(sensor, "vis"):
-               light = float(sensor.vis)
-               self.sensors[p]["light"] = light
+        path = self.cfg.get("path", "/")
+        measurements = self.cfg.get("measurements", ["temperature", "humidity", "vis"])
 
-	self.publish(["o:status"], self.sensors)
+        results = dict()
+        sensor = ow.Sensor(path)
+
+        if sensor is None: return
+
+        for m in measurements:
+            if hasattr(sensor, m):
+                results[m] = getattr(sensor, m)
+
+        self.publish(["o:status"], results)
 
 
     def walk_sensor_tree(self, sensor):
@@ -62,7 +62,7 @@ class OwfsPlugin(BasePlugin):
 
 	if sensor._path not in self.sensors:
 	    self.sensors[sensor._path] = dict(type=sensor._type)
-
+        print sensor._path
     	for next in sensor.sensors():
             if next._type in ["DS2409"]:
                 self.walk_sensor_tree(next)
